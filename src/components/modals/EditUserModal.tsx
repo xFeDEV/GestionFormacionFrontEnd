@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { User, UpdateUserPayload } from '../../api/user.service';
+import { Modal } from '../ui/modal';
+import InputField from '../form/input/InputField';
+import Select from '../form/Select';
+import Label from '../form/Label';
 import Button from '../ui/button/Button';
 
 interface EditUserModalProps {
@@ -23,7 +27,15 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
   });
 
   const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<Partial<UpdateUserPayload>>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Opciones para el select de tipo de contrato
+  const contractOptions = [
+    { value: 'Indefinido', label: 'Indefinido' },
+    { value: 'Temporal', label: 'Temporal' },
+    { value: 'Prácticas', label: 'Prácticas' },
+    { value: 'Freelance', label: 'Freelance' }
+  ];
 
   // Llenar el formulario cuando userData cambie
   useEffect(() => {
@@ -37,8 +49,8 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
     }
   }, [userData]);
 
-  // Manejar cambios en los inputs
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  // Manejar cambios en los inputs de texto
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -46,17 +58,34 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
     }));
     
     // Limpiar error del campo si existe
-    if (errors[name as keyof UpdateUserPayload]) {
-      setErrors(prev => ({
-        ...prev,
-        [name]: undefined
-      }));
+    if (errors[name]) {
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
+    }
+  };
+
+  // Manejar cambios en el select de tipo de contrato
+  const handleContractChange = (value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      tipo_contrato: value
+    }));
+    
+    if (errors.tipo_contrato) {
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors.tipo_contrato;
+        return newErrors;
+      });
     }
   };
 
   // Validar formulario
   const validateForm = (): boolean => {
-    const newErrors: Partial<UpdateUserPayload> = {};
+    const newErrors: Record<string, string> = {};
 
     if (!formData.nombre_completo?.trim()) {
       newErrors.nombre_completo = 'El nombre completo es requerido';
@@ -111,138 +140,99 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
     onClose();
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-            Editar Usuario
-          </h3>
-          <button
-            onClick={handleClose}
-            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+    <Modal isOpen={isOpen} onClose={handleClose} className="max-w-lg mx-4">
+      <div className="p-6 sm:p-8">
+        <h2 className="text-2xl font-bold mb-6 text-center text-gray-900 dark:text-white">
+          Editar Usuario
+        </h2>
+        
+        <form onSubmit={handleSubmit} className="space-y-5">
           {/* Nombre Completo */}
           <div>
-            <label htmlFor="nombre_completo" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Nombre Completo
-            </label>
-            <input
+            <Label htmlFor="nombre_completo">Nombre Completo</Label>
+            <InputField
               type="text"
               id="nombre_completo"
               name="nombre_completo"
-              value={formData.nombre_completo}
+              placeholder="Ingrese el nombre completo"
+              value={formData.nombre_completo || ''}
               onChange={handleInputChange}
-              className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${
-                errors.nombre_completo ? 'border-red-500' : 'border-gray-300'
-              }`}
               disabled={loading}
+              error={!!errors.nombre_completo}
+              hint={errors.nombre_completo}
             />
-            {errors.nombre_completo && (
-              <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.nombre_completo}</p>
-            )}
           </div>
 
           {/* Correo */}
           <div>
-            <label htmlFor="correo" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Correo Electrónico
-            </label>
-            <input
+            <Label htmlFor="correo">Correo Electrónico</Label>
+            <InputField
               type="email"
               id="correo"
               name="correo"
-              value={formData.correo}
+              placeholder="Ingrese el correo electrónico"
+              value={formData.correo || ''}
               onChange={handleInputChange}
-              className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${
-                errors.correo ? 'border-red-500' : 'border-gray-300'
-              }`}
               disabled={loading}
+              error={!!errors.correo}
+              hint={errors.correo}
             />
-            {errors.correo && (
-              <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.correo}</p>
-            )}
           </div>
 
           {/* Teléfono */}
           <div>
-            <label htmlFor="telefono" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Teléfono
-            </label>
-            <input
+            <Label htmlFor="telefono">Teléfono</Label>
+            <InputField
               type="tel"
               id="telefono"
               name="telefono"
-              value={formData.telefono}
+              placeholder="Ingrese el teléfono"
+              value={formData.telefono || ''}
               onChange={handleInputChange}
-              className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${
-                errors.telefono ? 'border-red-500' : 'border-gray-300'
-              }`}
               disabled={loading}
+              error={!!errors.telefono}
+              hint={errors.telefono}
             />
-            {errors.telefono && (
-              <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.telefono}</p>
-            )}
           </div>
 
           {/* Tipo de Contrato */}
           <div>
-            <label htmlFor="tipo_contrato" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Tipo de Contrato
-            </label>
-            <select
-              id="tipo_contrato"
-              name="tipo_contrato"
-              value={formData.tipo_contrato}
-              onChange={handleInputChange}
-              className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${
-                errors.tipo_contrato ? 'border-red-500' : 'border-gray-300'
-              }`}
-              disabled={loading}
-            >
-              <option value="">Seleccionar tipo de contrato</option>
-              <option value="Indefinido">Indefinido</option>
-              <option value="Temporal">Temporal</option>
-              <option value="Prácticas">Prácticas</option>
-              <option value="Freelance">Freelance</option>
-            </select>
+            <Label htmlFor="tipo_contrato">Tipo de Contrato</Label>
+            <Select
+              options={contractOptions}
+              placeholder="Seleccionar tipo de contrato"
+              onChange={handleContractChange}
+              defaultValue={formData.tipo_contrato || ''}
+              className={errors.tipo_contrato ? 'border-red-500' : ''}
+            />
             {errors.tipo_contrato && (
-              <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.tipo_contrato}</p>
+              <p className="mt-1.5 text-xs text-red-600 dark:text-red-400">
+                {errors.tipo_contrato}
+              </p>
             )}
           </div>
 
           {/* Botones */}
           <div className="flex justify-end space-x-3 pt-4">
             <Button
-              type="button"
               onClick={handleClose}
-              variant="secondary"
+              variant="outline"
               disabled={loading}
             >
               Cancelar
             </Button>
-            <Button
+            <button
               type="submit"
               disabled={loading}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
+              className="inline-flex items-center justify-center gap-2 rounded-lg transition px-5 py-3.5 text-sm bg-blue-600 text-white shadow-theme-xs hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Guardando...' : 'Guardar'}
-            </Button>
+            </button>
           </div>
         </form>
       </div>
-    </div>
+    </Modal>
   );
 };
 
