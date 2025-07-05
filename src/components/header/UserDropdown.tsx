@@ -1,11 +1,35 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { Link, useNavigate } from "react-router";
 
+// Interfaz de Usuario que coincide con la estructura del objeto JSON
+interface User {
+  id: number;
+  nombre_completo: string;
+  correo: string;
+  [key: string]: any; // Para propiedades adicionales
+}
+
 export default function UserDropdown() {
   const [isOpen, setIsOpen] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
   const navigate = useNavigate();
+
+  // Cargar los datos del usuario desde localStorage
+  useEffect(() => {
+    try {
+      const userDataString = localStorage.getItem('user_data');
+      if (userDataString) {
+        const userData = JSON.parse(userDataString);
+        setUser(userData);
+      }
+    } catch (error) {
+      console.error('Error parsing user data from localStorage:', error);
+      // Si hay error, limpiar datos corruptos
+      localStorage.removeItem('user_data');
+    }
+  }, []);
 
   function toggleDropdown() {
     setIsOpen(!isOpen);
@@ -16,8 +40,9 @@ export default function UserDropdown() {
   }
 
   function handleLogout() {
-    // Eliminar el token del localStorage
-    localStorage.removeItem("accessToken");
+    // Eliminar accessToken y user_data del localStorage
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('user_data');
     
     // Cerrar el dropdown
     closeDropdown();
@@ -33,10 +58,16 @@ export default function UserDropdown() {
         className="flex items-center text-gray-700 dropdown-toggle dark:text-gray-400"
       >
         <span className="mr-3 overflow-hidden rounded-full h-11 w-11">
-          <img src="/images/user/owner.jpg" alt="User" />
+          <img 
+            src="/images/user/owner.jpg" 
+            alt={user?.nombre_completo || "Usuario"}
+            className="w-full h-full object-cover"
+          />
         </span>
 
-        <span className="block mr-1 font-medium text-theme-sm">Musharof</span>
+        <span className="block mr-1 font-medium text-theme-sm">
+          {user?.nombre_completo || 'Cargando...'}
+        </span>
         <svg
           className={`stroke-gray-500 dark:stroke-gray-400 transition-transform duration-200 ${
             isOpen ? "rotate-180" : ""
@@ -64,10 +95,10 @@ export default function UserDropdown() {
       >
         <div>
           <span className="block font-medium text-gray-700 text-theme-sm dark:text-gray-400">
-            Musharof Chowdhury
+            {user?.nombre_completo || 'Cargando...'}
           </span>
           <span className="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">
-            randomuser@pimjo.com
+            {user?.correo || '...'}
           </span>
         </div>
 

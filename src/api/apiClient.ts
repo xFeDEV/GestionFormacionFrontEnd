@@ -1,0 +1,108 @@
+// Configuración base de la API
+const baseURL = 'http://145.132.96.47';
+
+// Tipos para mayor robustez
+interface ApiClientOptions {
+  body?: any;
+  headers?: Record<string, string>;
+}
+
+interface ApiError extends Error {
+  status: number;
+  statusText: string;
+}
+
+/**
+ * Cliente de API centralizado para manejar todas las comunicaciones con el backend
+ * Añade automáticamente el token de autenticación y maneja errores de forma consistente
+ */
+export const apiClient = async (
+  endpoint: string,
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' = 'GET',
+  options: ApiClientOptions = {}
+): Promise<any> => {
+  try {
+    // Obtener el token de acceso desde localStorage
+    const accessToken = localStorage.getItem('access_token');
+    
+    // Construir las cabeceras base
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      ...options.headers
+    };
+    
+    // Añadir cabecera de autorización si hay token disponible
+    if (accessToken) {
+      headers.Authorization = `Bearer ${accessToken}`;
+    }
+    
+    // Preparar el cuerpo de la petición
+    let body: string | FormData | undefined;
+    if (options.body) {
+      // Si el header es application/x-www-form-urlencoded, convertir a FormData
+      if (headers['Content-Type'] === 'application/x-www-form-urlencoded') {
+        const formData = new URLSearchParams();
+        Object.keys(options.body).forEach(key => {
+          formData.append(key, options.body[key]);
+        });
+        body = formData.toString();
+      } else {
+        body = JSON.stringify(options.body);
+      }
+    }
+    
+    // Realizar la llamada fetch
+    const response = await fetch(`${baseURL}${endpoint}`, {
+      method,
+      headers,
+      body,
+    });
+    
+    // Verificar si la respuesta es exitosa
+    if (!response.ok) {
+      let errorMessage = `HTTP error! status: ${response.status}`;
+      
+      try {
+        // Intentar obtener detalles del error desde la respuesta
+        const errorData = await response.json();
+        errorMessage = errorData.message || errorData.error || errorMessage;
+      } catch {
+        // Si no se puede parsear como JSON, usar el statusText
+        errorMessage = response.statusText || errorMessage;
+      }
+      
+      const error = new Error(errorMessage) as ApiError;
+      error.status = response.status;
+      error.statusText = response.statusText;
+      throw error;
+    }
+    
+    // Devolver la respuesta parseada como JSON
+    return await response.json();
+    
+  } catch (error) {
+    // Manejar errores de red y otros errores
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      throw new Error('Error de conexión de red. Verifica tu conexión a internet.');
+    }
+    
+    // Re-lanzar el error si ya es un error de API o cualquier otro error
+    throw error;
+  }
+};
+
+/**
+ * Función auxiliar para limpiar el token de localStorage
+ * Útil para logout o cuando el token expira
+ */
+export const clearAuthToken = (): void => {
+  localStorage.removeItem('access_token');
+  localStorage.removeItem('user_data');
+};
+
+/**
+ * Función auxiliar para verificar si el usuario está autenticado
+ */
+export const isAuthenticated = (): boolean => {
+  return !!localStorage.getItem('access_token');
+};

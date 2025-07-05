@@ -5,6 +5,7 @@ import Label from "../form/Label";
 import Input from "../form/input/InputField";
 import Checkbox from "../form/input/Checkbox";
 import Button from "../ui/button/Button";
+import { authService } from "../../api/auth.service";
 
 export default function SignInForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -22,28 +23,25 @@ export default function SignInForm() {
     setIsLoading(true);
 
     try {
-      const formData = new URLSearchParams();
-      formData.append("username", email);
-      formData.append("password", password);
-
-      const response = await fetch("http://145.132.96.47/access/token", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-        body: formData.toString(),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        localStorage.setItem("accessToken", data.access_token);
-        navigate("/");
+      // Usar authService para realizar el login
+      const data = await authService.login(email, password);
+      
+      // Guardar el token de acceso
+      localStorage.setItem('accessToken', data.access_token);
+      
+      // Guardar el objeto de usuario completo como un string JSON
+      localStorage.setItem('user_data', JSON.stringify(data.user));
+      
+      // Redirigir al usuario a la página principal
+      navigate("/");
+      
+    } catch (error) {
+      // Manejar diferentes tipos de errores
+      if (error instanceof Error) {
+        setError(error.message);
       } else {
-        const errorData = await response.json();
-        setError(errorData.detail || "Error en el inicio de sesión");
+        setError("Error en el inicio de sesión. Por favor, intenta nuevamente.");
       }
-    } catch (err) {
-      setError("Error de conexión. Por favor, intenta nuevamente.");
     } finally {
       setIsLoading(false);
     }
@@ -182,7 +180,7 @@ export default function SignInForm() {
                   <button 
                     type="submit"
                     className="w-full inline-flex items-center justify-center gap-2 rounded-lg transition px-4 py-3 text-sm bg-brand-500 text-white shadow-theme-xs hover:bg-brand-600 disabled:bg-brand-300 disabled:cursor-not-allowed disabled:opacity-50"
-                    disabled={isLoading}
+                    disabled={isLoading || !email || !password}
                   >
                     {isLoading ? "Signing in..." : "Sign in"}
                   </button>
