@@ -1,0 +1,207 @@
+# ===================================
+# Dependencias
+# ===================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# ===================================
+# Archivos de construcción
+# ===================================
+dist/
+dist-ssr/
+build/
+out/
+.output/
+.vite/
+.next/
+.nuxt/
+.cache/
+.parcel-cache/
+.vercel/
+.netlify/
+
+# ===================================
+# Variables de entorno
+# ===================================
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.*.local
+
+# ===================================
+# Archivos de configuración local
+# ===================================
+*.local
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ===================================
+# Logs
+# ===================================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ===================================
+# IDEs y editores
+# ===================================
+# Visual Studio Code
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+
+# JetBrains IDEs
+.idea/
+*.swp
+*.swo
+*~
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+.*.swp
+.*.swo
+
+# Emacs
+*~
+\#*\#
+.\#*
+
+# ===================================
+# Sistemas operativos
+# ===================================
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msm
+*.msp
+*.lnk
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Linux
+*~
+.directory
+.Trash-*
+
+# ===================================
+# Testing y Coverage
+# ===================================
+coverage/
+.nyc_output/
+.coverage/
+*.lcov
+.jest/
+test-results/
+playwright-report/
+test-results.xml
+jest.config.js.bak
+
+# ===================================
+# Archivos temporales
+# ===================================
+*.tmp
+*.temp
+*.swp
+*.swo
+*.bak
+*.backup
+*.orig
+*.rej
+.tmp/
+temp/
+
+# ===================================
+# Archivos específicos de React/Vite
+# ===================================
+# Storybook
+storybook-static/
+.storybook/public/
+
+# TypeScript
+*.tsbuildinfo
+
+# ESLint
+.eslintcache
+
+# Prettier
+.prettiercache
+
+# Stylelint
+.stylelintcache
+
+# ===================================
+# Archivos de deployment
+# ===================================
+.firebase/
+.surge/
+.now/
+.vercel/
+.netlify/
+.amplify/
+
+# ===================================
+# Otros archivos comunes
+# ===================================
+# Archivos de lock de otros gestores
+*.lock
+.pnp.*
+.yarn/
+
+# Archivos de configuración sensibles
+*.pem
+*.key
+*.cert
+*.crt
+
+# Archivos de base de datos locales
+*.db
+*.sqlite
+*.sqlite3
+
+# Archivos de caché
+.cache/
+.parcel-cache/
+.vite-cache/
+
+# Archivos de monitoreo
+.monitor/
+.profiling/
+
+# Archivos de documentación generada
+docs/build/
+documentation/build/
