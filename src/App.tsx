@@ -20,6 +20,7 @@ import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/Dashboard/Home";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import UsersPage from "./pages/UsersPage";
+import AmbienteDeFormacion from "./pages/AmbientePges/AmbienteDeFormacion";
 
 export default function App() {
   return (
@@ -40,6 +41,7 @@ export default function App() {
             <Route path="/calendar" element={<Calendar />} />
             <Route path="/blank" element={<Blank />} />
             <Route path="/usuarios" element={<UsersPage />} />
+            <Route path="/ambiente-de-formacion" element={<AmbienteDeFormacion />} />
 
             {/* Forms */}
             <Route path="/form-elements" element={<FormElements />} />
