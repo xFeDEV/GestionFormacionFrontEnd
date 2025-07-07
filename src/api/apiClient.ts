@@ -39,8 +39,14 @@ export const apiClient = async (
     // Preparar el cuerpo de la petición
     let body: string | FormData | undefined;
     if (options.body) {
+      // Si el body ya es FormData (para subida de archivos), usarlo directamente
+      if (options.body instanceof FormData) {
+        body = options.body;
+        // Remover Content-Type para que el navegador establezca multipart/form-data con boundary
+        delete headers['Content-Type'];
+      }
       // Si el header es application/x-www-form-urlencoded, convertir a FormData
-      if (headers['Content-Type'] === 'application/x-www-form-urlencoded') {
+      else if (headers['Content-Type'] === 'application/x-www-form-urlencoded') {
         const formData = new URLSearchParams();
         Object.keys(options.body).forEach(key => {
           formData.append(key, options.body[key]);

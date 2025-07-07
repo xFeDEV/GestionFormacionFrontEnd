@@ -6,6 +6,7 @@ import {
   BoxCubeIcon,
   CalenderIcon,
   ChevronDownIcon,
+  DownloadIcon,
   GridIcon,
   HorizontaLDots,
   ListIcon,
@@ -40,6 +41,11 @@ const navItems: NavItem[] = [
     icon: <BoxCubeIcon />,
     name: "Ambiente de Formación",
     path: "/ambiente-de-formacion",
+  },
+  {
+    icon: <DownloadIcon />,
+    name: "Carga Masiva",
+    path: "/carga-masiva",
   },
   {
     icon: <CalenderIcon />,
