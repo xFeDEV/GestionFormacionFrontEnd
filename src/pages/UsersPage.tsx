@@ -6,6 +6,8 @@ import PageBreadCrumb from '../components/common/PageBreadCrumb';
 import EditUserModal from '../components/modals/EditUserModal';
 import CreateUserModal from '../components/modals/CreateUserModal';
 import Button from '../components/ui/button/Button';
+import useAuth from '../hooks/useAuth';
+import Alert from '../components/ui/alert/Alert';
 
 const UsersPage = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -14,6 +16,8 @@ const UsersPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const currentUser = useAuth();
+  const allowedRoles = [1, 2]; // 1: Superadmin, 2: Admin
 
   // Función para obtener usuarios (extraída para reutilización)
   const fetchUsers = async () => {
@@ -55,8 +59,10 @@ const UsersPage = () => {
   };
 
   useEffect(() => {
-    fetchUsers();
-  }, []);
+    if (currentUser && allowedRoles.includes(currentUser.id_rol)) {
+      fetchUsers();
+    }
+  }, [currentUser]);
 
   // Función para abrir el modal de creación
   const handleOpenCreateModal = () => {
@@ -129,15 +135,18 @@ const UsersPage = () => {
     if (!selectedUser) return;
 
     try {
+      const { correo, ...otrosDatos } = updatedData;
+      const payloadParaActualizar: UpdateUserPayload = { ...otrosDatos };
+
+      if (correo && correo !== selectedUser.correo) {
+        payloadParaActualizar.correo = correo;
+      }
+
       // Llamar al servicio para actualizar el usuario
-      const updatedUser = await userService.updateUser(selectedUser.id, updatedData);
+      await userService.updateUser(selectedUser.id, payloadParaActualizar);
       
-      // Actualizar el usuario en el estado local
-      setUsers(prevUsers =>
-        prevUsers.map(u =>
-          u.id === selectedUser.id ? { ...u, ...updatedUser } : u
-        )
-      );
+      // ¡Línea clave! Volver a cargar los usuarios para refrescar la tabla
+      await fetchUsers();
       
       // Cerrar el modal
       setIsModalOpen(false);
@@ -147,6 +156,22 @@ const UsersPage = () => {
       throw error; // Re-lanzar el error para que el modal lo maneje
     }
   };
+
+  // Si el hook todavía está cargando el usuario, no muestres nada o un spinner.
+  if (!currentUser) {
+    return <div className="text-center">Verificando acceso...</div>;
+  }
+
+  // Si el rol del usuario no está permitido, muestra el mensaje de acceso denegado.
+  if (!currentUser.id_rol || !allowedRoles.includes(currentUser.id_rol)) {
+    return (
+      <Alert
+        variant="error"
+        title="Acceso Denegado"
+        message="No tienes los permisos necesarios para ver esta sección."
+      />
+    );
+  }
 
   return (
     <div className="space-y-6">
