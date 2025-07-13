@@ -22,6 +22,7 @@ import ProtectedRoute from "./components/auth/ProtectedRoute";
 import UsersPage from "./pages/UsersPage";
 import AmbienteDeFormacion from "./pages/AmbientePges/AmbienteDeFormacion";
 import CargaMasivaPage from "./pages/CargaMasiva/CargaMasivaPage";
+import ProgramsPage from "./pages/ProgramsPage";
 
 export default function App() {
   return (
@@ -34,7 +35,13 @@ export default function App() {
           <Route path="/signup" element={<SignUp />} />
 
           {/* Rutas Protegidas */}
-          <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+          <Route
+            element={
+              <ProtectedRoute>
+                <AppLayout />
+              </ProtectedRoute>
+            }
+          >
             <Route index path="/" element={<Home />} />
 
             {/* Others Page */}
@@ -42,8 +49,12 @@ export default function App() {
             <Route path="/calendar" element={<Calendar />} />
             <Route path="/blank" element={<Blank />} />
             <Route path="/usuarios" element={<UsersPage />} />
-            <Route path="/ambiente-de-formacion" element={<AmbienteDeFormacion />} />
+            <Route
+              path="/ambiente-de-formacion"
+              element={<AmbienteDeFormacion />}
+            />
             <Route path="/carga-masiva" element={<CargaMasivaPage />} />
+            <Route path="/programas-formacion" element={<ProgramsPage />} />
 
             {/* Forms */}
             <Route path="/form-elements" element={<FormElements />} />

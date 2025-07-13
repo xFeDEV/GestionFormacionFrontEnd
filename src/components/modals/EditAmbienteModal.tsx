@@ -223,7 +223,7 @@ const EditAmbienteModal: React.FC<EditAmbienteModalProps> = ({
             >
               Cancelar
             </Button>
-            <Button
+            <Button type="submit"
               disabled={loading}
               className="flex-1"
             >

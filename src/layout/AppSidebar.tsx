@@ -49,6 +49,11 @@ const navItems: NavItem[] = [
     path: "/carga-masiva",
   },
   {
+    icon: <BoxCubeIcon />,
+    name: "Programas",
+    path: "/programas-formacion",
+  },
+  {
     icon: <CalenderIcon />,
     name: "Calendar",
     path: "/calendar",
@@ -182,8 +187,12 @@ const AppSidebar: React.FC = () => {
   const renderMenuItems = (items: NavItem[], menuType: "main" | "others") => (
     <ul className="flex flex-col gap-4">
       {items.map((nav, index) => {
-        if (nav.path === '/usuarios') {
-          if (!currentUser || !currentUser.id_rol || !allowedRoles.includes(currentUser.id_rol)) {
+        if (nav.path === "/usuarios") {
+          if (
+            !currentUser ||
+            !currentUser.id_rol ||
+            !allowedRoles.includes(currentUser.id_rol)
+          ) {
             return null;
           }
         }
@@ -204,7 +213,8 @@ const AppSidebar: React.FC = () => {
               >
                 <span
                   className={`menu-item-icon-size  ${
-                    openSubmenu?.type === menuType && openSubmenu?.index === index
+                    openSubmenu?.type === menuType &&
+                    openSubmenu?.index === index
                       ? "menu-item-icon-active"
                       : "menu-item-icon-inactive"
                   }`}
@@ -230,7 +240,9 @@ const AppSidebar: React.FC = () => {
                 <Link
                   to={nav.path}
                   className={`menu-item group ${
-                    isActive(nav.path) ? "menu-item-active" : "menu-item-inactive"
+                    isActive(nav.path)
+                      ? "menu-item-active"
+                      : "menu-item-inactive"
                   }`}
                 >
                   <span
@@ -256,7 +268,8 @@ const AppSidebar: React.FC = () => {
                 className="overflow-hidden transition-all duration-300"
                 style={{
                   height:
-                    openSubmenu?.type === menuType && openSubmenu?.index === index
+                    openSubmenu?.type === menuType &&
+                    openSubmenu?.index === index
                       ? `${subMenuHeight[`${menuType}-${index}`]}px`
                       : "0px",
                 }}

@@ -201,7 +201,7 @@ const CreateAmbienteModal: React.FC<CreateAmbienteModalProps> = ({
             >
               Cancelar
             </Button>
-            <Button
+            <Button type="submit"
               disabled={loading}
               className="flex-1"
             >
