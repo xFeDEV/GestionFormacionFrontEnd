@@ -9,6 +9,7 @@ import ProgramsTable from "../components/tables/ProgramsTable/ProgramsTable";
 import CreateProgramModal from "../components/modals/CreateProgramModal";
 import EditProgramModal from "../components/modals/EditProgramModal";
 import PageBreadcrumb from "../components/common/PageBreadCrumb"; // Ajusta la ruta si es necesario
+import useMediaQuery from "../hooks/useMediaQuery";
 
 const ProgramsPage: React.FC = () => {
   // --- ESTADO DEL COMPONENTE ---
@@ -28,6 +29,9 @@ const ProgramsPage: React.FC = () => {
 
   // Referencia para controlar el scroll y evitar saltos en la paginación
   const gestionContainerRef = useRef<HTMLDivElement>(null);
+
+  // Hook para detectar si estamos en una pantalla móvil
+  const isMobile = useMediaQuery("(max-width: 768px)");
 
   // --- LÓGICA DE DATOS ---
   const fetchPrograms = async () => {
@@ -200,79 +204,116 @@ const ProgramsPage: React.FC = () => {
           onEditClick={handleEditClick}
         />
 
-        {/* Paginación */}
+        {/* Paginación Responsiva */}
         {!loading && !error && totalPaginas > 1 && (
           <div className="flex items-center justify-between px-4 py-3 mt-4 bg-white border-t border-gray-200 sm:px-6 dark:bg-gray-900 dark:border-gray-800">
-            <div>
-              <p className="text-sm text-gray-700 dark:text-gray-400">
-                Mostrando{" "}
-                <span className="font-medium">
-                  {(paginaActual - 1) * programasPorPagina + 1}
-                </span>{" "}
-                a{" "}
-                <span className="font-medium">
-                  {Math.min(
-                    paginaActual * programasPorPagina,
-                    programasFiltrados.length
-                  )}
-                </span>{" "}
-                de{" "}
-                <span className="font-medium">{programasFiltrados.length}</span>{" "}
-                resultados
-              </p>
-            </div>
-            <div>
+            {/* Información de resultados - Solo en Desktop */}
+            {!isMobile && (
+              <div>
+                <p className="text-sm text-gray-700 dark:text-gray-400">
+                  Mostrando{" "}
+                  <span className="font-medium">
+                    {(paginaActual - 1) * programasPorPagina + 1}
+                  </span>{" "}
+                  a{" "}
+                  <span className="font-medium">
+                    {Math.min(
+                      paginaActual * programasPorPagina,
+                      programasFiltrados.length
+                    )}
+                  </span>{" "}
+                  de{" "}
+                  <span className="font-medium">
+                    {programasFiltrados.length}
+                  </span>{" "}
+                  resultados
+                </p>
+              </div>
+            )}
+
+            {/* Controles de Paginación */}
+            <div className={isMobile ? "w-full" : ""}>
               <nav
-                className="inline-flex -space-x-px rounded-md shadow-sm isolate"
+                className={`inline-flex -space-x-px rounded-md shadow-sm isolate ${
+                  isMobile ? "w-full justify-center" : ""
+                }`}
                 aria-label="Pagination"
               >
+                {/* Botón Anterior */}
                 <button
                   onClick={() => handleCambiarPagina(paginaActual - 1)}
                   disabled={paginaActual === 1}
-                  className="relative inline-flex items-center px-3 py-2 text-gray-500 rounded-l-md border border-gray-300 bg-white text-sm font-medium hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-800 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700"
+                  className={`relative inline-flex items-center px-3 py-2 text-gray-500 rounded-l-md border border-gray-300 bg-white text-sm font-medium hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-800 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700 ${
+                    isMobile ? "flex-1 justify-center" : ""
+                  }`}
                 >
-                  Anterior
+                  {isMobile ? "◀" : "Anterior"}
                 </button>
 
-                {/* Botones numéricos dinámicos con ventana deslizante */}
-                {generatePaginationItems().map((item, index) => {
-                  if (item === "...") {
+                {/* Paginación Desktop vs Mobile */}
+                {isMobile ? (
+                  /* Versión Mobile: Indicador simple de página */
+                  <div className="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 flex-1 justify-center">
+                    <span className="font-medium text-[#39A900]">
+                      {paginaActual}
+                    </span>
+                    <span className="mx-1">de</span>
+                    <span className="font-medium">{totalPaginas}</span>
+                  </div>
+                ) : (
+                  /* Versión Desktop: Paginación numérica completa */
+                  generatePaginationItems().map((item, index) => {
+                    if (item === "...") {
+                      return (
+                        <span
+                          key={`ellipsis-${index}`}
+                          className="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-500 border border-gray-300 bg-white dark:bg-gray-800 dark:border-gray-600 dark:text-gray-400"
+                        >
+                          ...
+                        </span>
+                      );
+                    }
+
+                    const numeroPage = item as number;
+                    const isActive = numeroPage === paginaActual;
                     return (
-                      <span
-                        key={`ellipsis-${index}`}
-                        className="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-500 border border-gray-300 bg-white dark:bg-gray-800 dark:border-gray-600 dark:text-gray-400"
+                      <button
+                        key={numeroPage}
+                        onClick={() => handleCambiarPagina(numeroPage)}
+                        className={`relative inline-flex items-center px-4 py-2 text-sm font-medium border transition-colors ${
+                          isActive
+                            ? "bg-[#39A900] text-white border-[#39A900] z-10 hover:bg-[#2d8000]"
+                            : "bg-white text-gray-500 border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700"
+                        }`}
                       >
-                        ...
-                      </span>
+                        {numeroPage}
+                      </button>
                     );
-                  }
+                  })
+                )}
 
-                  const numeroPage = item as number;
-                  const isActive = numeroPage === paginaActual;
-                  return (
-                    <button
-                      key={numeroPage}
-                      onClick={() => handleCambiarPagina(numeroPage)}
-                      className={`relative inline-flex items-center px-4 py-2 text-sm font-medium border transition-colors ${
-                        isActive
-                          ? "bg-[#39A900] text-white border-[#39A900] z-10 hover:bg-[#2d8000]"
-                          : "bg-white text-gray-500 border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700"
-                      }`}
-                    >
-                      {numeroPage}
-                    </button>
-                  );
-                })}
-
+                {/* Botón Siguiente */}
                 <button
                   onClick={() => handleCambiarPagina(paginaActual + 1)}
                   disabled={paginaActual === totalPaginas}
-                  className="relative inline-flex items-center px-3 py-2 text-gray-500 rounded-r-md border border-gray-300 bg-white text-sm font-medium hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-800 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700"
+                  className={`relative inline-flex items-center px-3 py-2 text-gray-500 rounded-r-md border border-gray-300 bg-white text-sm font-medium hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-800 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700 ${
+                    isMobile ? "flex-1 justify-center" : ""
+                  }`}
                 >
-                  Siguiente
+                  {isMobile ? "▶" : "Siguiente"}
                 </button>
               </nav>
             </div>
+
+            {/* Información de resultados compacta - Solo en Mobile */}
+            {isMobile && (
+              <div className="mt-3 text-center">
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  {programasFiltrados.length} resultado
+                  {programasFiltrados.length !== 1 ? "s" : ""}
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>
