@@ -1,75 +1,51 @@
-2025-07-14T03:25:21.5631120Z ##[group]Run appleboy/ssh-action@master
-with:
-  host: ***
-  username: ***
-  key: ***
-  port: ***
-  script: # --- PASO 1: PREPARAR ENTORNO Y CÓDIGO ---
-cd /home/*/gestionformacionfrontend
-echo "🔄 Actualizando código fuente..."
-git fetch origin
-git reset --hard origin/main
+name: Desplegar Frontend en Azure VM
 
-# --- PASO 2: CONSTRUIR (como ***) ---
-echo "📦 Preparando entorno de Node.js..."
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+on:
+  push:
+    branches:
+      - main
 
-echo "⚙ Instalando dependencias..."
-npm install
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
 
-echo "🔨 Construyendo la aplicación..."
-npm run build
+    steps:
+      - name: Clonar repositorio
+        uses: actions/checkout@v4
 
-# --- PASO 3: DESPLEGAR (con sudo) ---
-echo "🚀 Copiando archivos a Nginx..."
-sudo cp -rf dist/* /var/www/GestionFormacionFrontend/
-
-echo "🔒 Ajustando permisos para Nginx..."
-sudo chown -R www-data:www-data /var/www/GestionFormacionFrontend
-
-echo "✅ ¡Despliegue completado!"
-  protocol: tcp
-  timeout: 30s
-  command_timeout: 10m
-  proxy_port: ***
-  proxy_protocol: tcp
-  proxy_timeout: 30s
-  curl_insecure: false
-  capture_stdout: false
-Run echo "$GITHUB_ACTION_PATH" >> $GITHUB_PATH
-Run entrypoint.sh
-Downloading drone-ssh-1.8.1-linux-amd64 from https://github.com/appleboy/drone-ssh/releases/download/v1.8.1
-======= CLI Version Information =======
-Drone SSH version 1.8.1
-=======================================
-🔄 Actualizando código fuente...
-bash: line 2: cd: /home/*/gestionformacionfrontend: No such file or directory
-fatal: not a git repository (or any of the parent directories): .git
-fatal: not a git repository (or any of the parent directories): .git
-📦 Preparando entorno de Node.js...
-⚙ Instalando dependencias...
-npm error code ENOENT
-npm error syscall open
-npm error path /home/*/package.json
-npm error errno -2
-npm error enoent Could not read package.json: Error: ENOENT: no such file or directory, open '/home/*/package.json'
-npm error enoent This is related to npm not being able to find a file.
-npm error enoent
-npm error A complete log of this run can be found in: /home/*/.npm/_logs/2025-07-14T03_25_23_072Z-debug-0.log
-🔨 Construyendo la aplicación...
-npm error code ENOENT
-npm error syscall open
-npm error path /home/*/package.json
-npm error errno -2
-npm error enoent Could not read package.json: Error: ENOENT: no such file or directory, open '/home/*/package.json'
-npm error enoent This is related to npm not being able to find a file.
-npm error enoent
-npm error A complete log of this run can be found in: /home/*/.npm/_logs/2025-07-14T03_25_23_392Z-debug-0.log
-🚀 Copiando archivos a Nginx...
-cp: cannot stat 'dist/*': No such file or directory
-🔒 Ajustando permisos para Nginx...
-✅ ¡Despliegue completado!
-===============================================
-✅ Successfully executed commands to all hosts.
-===============================================
+      - name: Desplegar en servidor vía SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.VM_IP_PUBLICA }}
+          username: ${{ secrets.VM_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.VM_PORT }}
+          script: |
+            # --- PASO 1: NAVEGAR AL DIRECTORIO CORRECTO ---
+            # Usamos la ruta exacta, sin comodines.
+            cd /home/azureuser/gestionformacionfrontend
+            
+            # --- PASO 2: ACTUALIZAR EL CÓDIGO FUENTE ---
+            echo "🔄 Actualizando código fuente..."
+            git fetch origin
+            git reset --hard origin/main
+            
+            # --- PASO 3: CONSTRUIR LA APLICACIÓN (como 'azureuser') ---
+            echo "📦 Preparando entorno de Node.js..."
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            
+            echo "⚙️ Instalando dependencias..."
+            npm install
+            
+            echo "🔨 Construyendo la aplicación..."
+            npm run build
+            
+            # --- PASO 4: DESPLEGAR LOS ARCHIVOS (con 'sudo') ---
+            echo "🚀 Copiando archivos construidos a Nginx..."
+            sudo cp -rf dist/* /var/www/GestionFormacionFrontend/
+            
+            echo "🔒 Ajustando permisos para el servidor web..."
+            sudo chown -R www-data:www-data /var/www/GestionFormacionFrontend
+            
+            echo "✅ ¡Despliegue completado con éxito!"
