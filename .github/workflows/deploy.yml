@@ -21,33 +21,28 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.VM_PORT }}
           script: |
-            # === PASO 1: PREPARAR EL ENTORNO ===
+            # === PASO 1: NAVEGAR AL DIRECTORIO ===
+            cd /home/azureuser/gestionformacionfrontend
+            
+            # === PASO 2: ACTUALIZAR EL CÓDIGO FUENTE ===
+            # Forza la rama local a ser idéntica a la de GitHub
+            git reset --hard HEAD
+            git fetch origin
+            git reset --hard origin/main
+            
+            # === PASO 3: CONSTRUIR LA APLICACIÓN (COMO azureuser) ===
+            # Cargar NVM para que 'npm' esté disponible
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
             
-            # === PASO 2: ACTUALIZAR EL CÓDIGO DE FORMA ROBUSTA ===
-            cd /home/azureuser/gestionformacionfrontend
-            
-            # Limpia cualquier cambio local no guardado.
-            git reset --hard HEAD
-            
-            # Se asegura de que la información de la rama remota esté actualizada.
-            git fetch origin
-            
-            # Forza la rama local a ser exactamente igual que la remota.
-            git reset --hard origin/main
-            
-            # === PASO 3: CONSTRUIR Y DESPLEGAR ===
-            echo "Instalando dependencias..."
+            # Instalar dependencias y construir el proyecto
             npm install
-            
-            echo "Construyendo la aplicación..."
             npm run build
             
-            echo "Copiando archivos a Nginx..."
+            # === PASO 4: DESPLEGAR LOS ARCHIVOS (COMO ROOT) ===
+            # Solo usamos 'sudo' para los comandos que lo necesitan estrictamente
+            sudo chown -R azureuser:azureuser dist
             sudo cp -r dist/* /var/www/GestionFormacionFrontend/
-            
-            echo "Ajustando permisos..."
             sudo chown -R www-data:www-data /var/www/GestionFormacionFrontend
             
-            echo "🎉 ¡Despliegue completado!"
+            echo "✅ ¡Despliegue completado con éxito!"
