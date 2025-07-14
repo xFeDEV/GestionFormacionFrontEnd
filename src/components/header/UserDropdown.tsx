@@ -2,13 +2,14 @@ import { useState, useEffect } from "react";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { useNavigate } from "react-router";
+import { authService } from "../../api/auth.service";
 
 // Interfaz de Usuario que coincide con la estructura del objeto JSON
 interface User {
   id: number;
   nombre_completo: string;
   correo: string;
-  [key: string]: any; // Para propiedades adicionales
+  [key: string]: unknown; // Para propiedades adicionales
 }
 
 export default function UserDropdown() {
@@ -19,15 +20,15 @@ export default function UserDropdown() {
   // Cargar los datos del usuario desde localStorage
   useEffect(() => {
     try {
-      const userDataString = localStorage.getItem('user_data');
+      const userDataString = localStorage.getItem("user_data");
       if (userDataString) {
         const userData = JSON.parse(userDataString);
         setUser(userData);
       }
     } catch (error) {
-      console.error('Error parsing user data from localStorage:', error);
+      console.error("Error parsing user data from localStorage:", error);
       // Si hay error, limpiar datos corruptos
-      localStorage.removeItem('user_data');
+      localStorage.removeItem("user_data");
     }
   }, []);
 
@@ -40,15 +41,27 @@ export default function UserDropdown() {
   }
 
   function handleLogout() {
-    // Eliminar accessToken y user_data del localStorage
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('user_data');
-    
-    // Cerrar el dropdown
-    closeDropdown();
-    
-    // Redirigir al usuario a la página de login
-    navigate("/signin");
+    try {
+      // 1. Centralizar la lógica: usar authService para limpiar completamente la sesión
+      authService.logout();
+
+      // 2. Cerrar el dropdown
+      closeDropdown();
+
+      // 3. Redirección efectiva con limpieza del historial
+      // Usar { replace: true } para reemplazar la entrada actual en el historial
+      // Esto evita que el botón "Atrás" pueda regresar a páginas protegidas
+      navigate("/signin", { replace: true });
+    } catch (error) {
+      console.error("Error durante el cierre de sesión:", error);
+
+      // Fallback: limpiar manualmente en caso de error
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("user_data");
+
+      // Aún así redirigir con replace: true por seguridad
+      navigate("/signin", { replace: true });
+    }
   }
 
   return (
@@ -58,15 +71,15 @@ export default function UserDropdown() {
         className="flex items-center text-gray-700 dropdown-toggle dark:text-gray-400"
       >
         <span className="mr-3 overflow-hidden rounded-full h-11 w-11">
-          <img 
-            src="/images/user/owner.jpg" 
+          <img
+            src="/images/user/owner.jpg"
             alt={user?.nombre_completo || "Usuario"}
             className="w-full h-full object-cover"
           />
         </span>
 
         <span className="block mr-1 font-medium text-theme-sm">
-          {user?.nombre_completo || 'Cargando...'}
+          {user?.nombre_completo || "Cargando..."}
         </span>
         <svg
           className={`stroke-gray-500 dark:stroke-gray-400 transition-transform duration-200 ${
@@ -95,10 +108,10 @@ export default function UserDropdown() {
       >
         <div>
           <span className="block font-medium text-gray-700 text-theme-sm dark:text-gray-400">
-            {user?.nombre_completo || 'Cargando...'}
+            {user?.nombre_completo || "Cargando..."}
           </span>
           <span className="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">
-            {user?.correo || '...'}
+            {user?.correo || "..."}
           </span>
         </div>
 
