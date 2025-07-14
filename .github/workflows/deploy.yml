@@ -1,0 +1,182 @@
+# GitHub Actions Workflow para Despliegue Automático
+# Despliega la aplicación React/TypeScript a una VM de Azure con Nginx
+name: Deploy to Azure VM
+
+# Configuración del activador - se ejecuta en cada push a la rama main
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # Permite ejecución manual desde GitHub UI
+
+# Definición de trabajos (jobs)
+jobs:
+  deploy:
+    name: Deploy Frontend to Azure VM
+    runs-on: ubuntu-latest
+
+    steps:
+      # Paso 1: Checkout del código fuente del repositorio
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Obtiene todo el historial para un deploy completo
+
+      # Paso 2: Configuración de Node.js para el entorno de CI/CD
+      - name: Setup Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20" # Usar Node.js 20 LTS para compatibilidad óptima
+          cache: "npm" # Cachear dependencias de npm para builds más rápidos
+
+      # Paso 3: Instalación de dependencias del proyecto
+      - name: Install Dependencies
+        run: npm ci # npm ci es más rápido y confiable para CI/CD que npm install
+
+      # Paso 4: Construcción del proyecto React/TypeScript con Vite
+      - name: Build React Application
+        run: npm run build
+        env:
+          NODE_ENV: production # Asegurar que se construya para producción
+
+      # Paso 5: Verificación de que la carpeta dist/ fue creada correctamente
+      - name: Verify Build Output
+        run: |
+          if [ ! -d "dist" ]; then
+            echo "❌ Error: La carpeta dist/ no fue generada"
+            exit 1
+          fi
+          echo "✅ Build completado exitosamente"
+          ls -la dist/ # Mostrar contenido de la carpeta dist para debug
+
+      # Paso 6: Despliegue a la VM de Azure vía SSH
+      - name: Deploy to Azure VM
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          # Configuración de conexión SSH usando secretos de GitHub
+          host: ${{ secrets.VM_IP_PUBLICA }}
+          username: ${{ secrets.VM_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.VM_PORT }}
+
+          # Configuración de SSH para mayor seguridad
+          command_timeout: 10m # Timeout de 10 minutos para comandos largos
+
+          # Script de despliegue que se ejecutará en la VM
+          script: |
+            # Mostrar información del servidor para debug
+            echo "🚀 Iniciando despliegue en $(hostname) - $(date)"
+            echo "📍 Usuario actual: $(whoami)"
+            echo "📂 Directorio actual: $(pwd)"
+
+            # Paso 6a: Navegar al directorio del repositorio
+            echo "📁 Navegando al directorio del repositorio..."
+            cd /home/azureuser/gestionformacionfrontend || {
+              echo "❌ Error: No se pudo acceder al directorio del repositorio"
+              exit 1
+            }
+
+            # Verificar que estamos en el directorio correcto
+            echo "📍 Directorio actual: $(pwd)"
+
+            # Paso 6b: Obtener los últimos cambios del repositorio
+            echo "🔄 Actualizando código desde GitHub..."
+            git stash push -m "Backup antes del deploy $(date)" || true # Guardar cambios locales si existen
+            git pull origin main || {
+              echo "❌ Error: No se pudo actualizar el código desde GitHub"
+              exit 1
+            }
+
+            # Verificar que el pull fue exitoso
+            echo "✅ Código actualizado - último commit:"
+            git log -1 --oneline
+
+            # Paso 6c: Instalar/actualizar dependencias de Node.js
+            echo "📦 Instalando dependencias de Node.js..."
+            npm install || {
+              echo "❌ Error: Falló la instalación de dependencias"
+              exit 1
+            }
+
+            # Paso 6d: Construir la aplicación React
+            echo "🔨 Construyendo aplicación React..."
+            npm run build || {
+              echo "❌ Error: Falló la construcción de la aplicación"
+              exit 1
+            }
+
+            # Verificar que la carpeta dist fue creada
+            if [ ! -d "dist" ]; then
+              echo "❌ Error: La carpeta dist/ no fue generada en la VM"
+              exit 1
+            fi
+
+            echo "✅ Build completado en la VM"
+            echo "📊 Contenido de dist/:"
+            ls -la dist/
+
+            # Paso 6e: Desplegar archivos al directorio web de Nginx
+            echo "🌐 Desplegando archivos a Nginx..."
+
+            # Crear backup del deployment anterior
+            BACKUP_DIR="/var/www/backup-$(date +%Y%m%d-%H%M%S)"
+            sudo mkdir -p "$BACKUP_DIR" || true
+            sudo cp -r /var/www/GestionFormacionFrontend/* "$BACKUP_DIR/" 2>/dev/null || echo "⚠️  No hay archivos previos para respaldar"
+
+            # Limpiar directorio web actual
+            sudo rm -rf /var/www/GestionFormacionFrontend/*
+
+            # Copiar nuevos archivos construidos
+            sudo cp -r dist/* /var/www/GestionFormacionFrontend/ || {
+              echo "❌ Error: No se pudieron copiar los archivos al directorio web"
+              # Restaurar backup en caso de error
+              sudo cp -r "$BACKUP_DIR"/* /var/www/GestionFormacionFrontend/ 2>/dev/null || true
+              exit 1
+            }
+
+            # Configurar permisos correctos para Nginx
+            sudo chown -R www-data:www-data /var/www/GestionFormacionFrontend/
+            sudo chmod -R 755 /var/www/GestionFormacionFrontend/
+
+            # Verificar que los archivos fueron copiados correctamente
+            echo "📁 Archivos desplegados en /var/www/GestionFormacionFrontend/:"
+            sudo ls -la /var/www/GestionFormacionFrontend/
+
+            # Reiniciar Nginx para asegurar que los cambios se apliquen
+            echo "🔄 Reiniciando Nginx..."
+            sudo systemctl reload nginx || {
+              echo "⚠️  Advertencia: No se pudo recargar Nginx, intentando restart..."
+              sudo systemctl restart nginx || {
+                echo "❌ Error: No se pudo reiniciar Nginx"
+                exit 1
+              }
+            }
+
+            # Verificar estado de Nginx
+            if sudo systemctl is-active --quiet nginx; then
+              echo "✅ Nginx está funcionando correctamente"
+            else
+              echo "❌ Error: Nginx no está activo"
+              sudo systemctl status nginx
+              exit 1
+            fi
+
+            # Mostrar resumen final del despliegue
+            echo ""
+            echo "🎉 ¡DESPLIEGUE COMPLETADO EXITOSAMENTE!"
+            echo "⏰ Fecha: $(date)"
+            echo "🔗 La aplicación está disponible en tu dominio"
+            echo "📊 Espacio en disco usado:"
+            df -h /var/www/
+            echo ""
+            echo "📝 Backup guardado en: $BACKUP_DIR"
+            echo "🔧 Para ver logs de Nginx: sudo journalctl -u nginx -f"
+
+      # Paso 7: Notificación de resultado (opcional)
+      - name: Deployment Status
+        if: always() # Ejecutar siempre, independientemente del resultado anterior
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "✅ Despliegue completado exitosamente"
+          else
+            echo "❌ Despliegue falló - revisar logs arriba"
+          fi
