@@ -22,32 +22,32 @@ jobs:
           port: ${{ secrets.VM_PORT }}
           script: |
             # === PASO 1: PREPARAR EL ENTORNO ===
-            # Cargar NVM (Node Version Manager) en la sesión actual.
-            # Esto es CRÍTICO para que los comandos de node y npm funcionen.
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
             
-            # Verificar versiones para debug
-            echo "Node version: $(node -v)"
-            echo "NPM version: $(npm -v)"
-
-            # === PASO 2: DESPLEGAR EL CÓDIGO ===
-            # Navegar a la carpeta del proyecto
+            # === PASO 2: ACTUALIZAR EL CÓDIGO DE FORMA ROBUSTA ===
             cd /home/azureuser/gestionformacionfrontend
             
-            # Descargar los últimos cambios de GitHub
-            git pull origin main
+            # Limpia cualquier cambio local no guardado.
+            git reset --hard HEAD
             
-            # Instalar dependencias
+            # Se asegura de que la información de la rama remota esté actualizada.
+            git fetch origin
+            
+            # Forza la rama local a ser exactamente igual que la remota.
+            git reset --hard origin/main
+            
+            # === PASO 3: CONSTRUIR Y DESPLEGAR ===
+            echo "Instalando dependencias..."
             npm install
             
-            # Construir la aplicación para producción
+            echo "Construyendo la aplicación..."
             npm run build
             
-            # Copiar los nuevos archivos al directorio web de Nginx
+            echo "Copiando archivos a Nginx..."
             sudo cp -r dist/* /var/www/GestionFormacionFrontend/
             
-            # Asegurar que Nginx tenga los permisos correctos
+            echo "Ajustando permisos..."
             sudo chown -R www-data:www-data /var/www/GestionFormacionFrontend
             
             echo "🎉 ¡Despliegue completado!"
