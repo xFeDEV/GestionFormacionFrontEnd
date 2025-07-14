@@ -7,7 +7,7 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
-package-lock.json
+
 yarn.lock
 pnpm-lock.yaml
 
@@ -178,7 +178,6 @@ storybook-static/
 # Otros archivos comunes
 # ===================================
 # Archivos de lock de otros gestores
-*.lock
 .pnp.*
 .yarn/
 
