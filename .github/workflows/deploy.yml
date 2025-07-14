@@ -23,7 +23,7 @@ jobs:
           script: |
             # --- PASO 1: NAVEGAR AL DIRECTORIO CORRECTO ---
             # Usamos la ruta exacta, sin comodines.
-            cd /home/azureuser/gestionformacionfrontend
+            cd /home/azureuser/GestionFormacionFrontend
             
             # --- PASO 2: ACTUALIZAR EL CÓDIGO FUENTE ---
             echo "🔄 Actualizando código fuente..."
