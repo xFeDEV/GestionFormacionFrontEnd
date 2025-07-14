@@ -22,7 +22,7 @@ import ProtectedRoute from "./components/auth/ProtectedRoute";
 import UsersPage from "./pages/UsersPage";
 import AmbienteDeFormacion from "./pages/AmbientePges/AmbienteDeFormacion";
 import CargaMasivaPage from "./pages/CargaMasiva/CargaMasivaPage";
-import ProgramsPage from "./pages/ProgramsPage";
+import ProgramsPage from "./pages/Programs/ProgramsPage";
 import GrupoPage from "./pages/GrupoPages/GrupoPage";
 
 export default function App() {
