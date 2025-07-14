@@ -1,5 +1,7 @@
+# Nombre del workflow de despliegue final
 name: Desplegar Frontend en Azure VM
 
+# Se activa cada vez que se realiza un push a la rama 'main'
 on:
   push:
     branches:
@@ -22,11 +24,11 @@ jobs:
           port: ${{ secrets.VM_PORT }}
           script: |
             # --- PASO 1: NAVEGAR AL DIRECTORIO CORRECTO ---
-            # Usamos la ruta exacta, sin comodines.
-            cd /home/azureuser/GestionFormacionFrontend
+            # Usamos la ruta exacta y con las mayúsculas correctas
+            cd /home/azureuser/GestionFormacionFrontEnd
             
             # --- PASO 2: ACTUALIZAR EL CÓDIGO FUENTE ---
-            echo "🔄 Actualizando código fuente..."
+            echo "🔄 Actualizando código fuente desde GitHub..."
             git fetch origin
             git reset --hard origin/main
             
