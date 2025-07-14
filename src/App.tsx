@@ -23,6 +23,7 @@ import UsersPage from "./pages/UsersPage";
 import AmbienteDeFormacion from "./pages/AmbientePges/AmbienteDeFormacion";
 import CargaMasivaPage from "./pages/CargaMasiva/CargaMasivaPage";
 import ProgramsPage from "./pages/ProgramsPage";
+import GrupoPage from "./pages/GrupoPages/GrupoPage";
 
 export default function App() {
   return (
@@ -55,6 +56,9 @@ export default function App() {
             />
             <Route path="/carga-masiva" element={<CargaMasivaPage />} />
             <Route path="/programas-formacion" element={<ProgramsPage />} />
+            <Route path="/grupos" element={<GrupoPage />} />
+
+            {/* User Profiles */}
 
             {/* Forms */}
             <Route path="/form-elements" element={<FormElements />} />

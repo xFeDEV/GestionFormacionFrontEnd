@@ -9,6 +9,7 @@ import {
   ChevronDownIcon,
   DownloadIcon,
   GridIcon,
+  GroupIcon,
   HorizontaLDots,
   ListIcon,
   PageIcon,
@@ -52,6 +53,11 @@ const navItems: NavItem[] = [
     icon: <BoxCubeIcon />,
     name: "Programas",
     path: "/programas-formacion",
+  },
+  {
+    icon: <GroupIcon />, // Puedes usar cualquier ícono que prefieras
+    name: "Gestión de Grupos",
+    path: "/grupos",
   },
   {
     icon: <CalenderIcon />,
