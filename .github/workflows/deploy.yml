@@ -10,20 +10,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Clona tu repositorio al entorno de GitHub Actions
       - name: Clonar repositorio
         uses: actions/checkout@v4
 
-      # 2. Configura Node.js y utiliza el cache para acelerar 'npm install'
-      - name: Configurar Node.js y Cache de NPM
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: package-lock.json
-
-      # 3. Se conecta a tu VM por SSH y ejecuta los comandos de despliegue
-      - name: Desplegar en servidor
+      - name: Desplegar en servidor vía SSH
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.VM_IP_PUBLICA }}
@@ -31,17 +21,33 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.VM_PORT }}
           script: |
-            # Navega a la carpeta del proyecto usando la ruta EXACTA
+            # === PASO 1: PREPARAR EL ENTORNO ===
+            # Cargar NVM (Node Version Manager) en la sesión actual.
+            # Esto es CRÍTICO para que los comandos de node y npm funcionen.
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            
+            # Verificar versiones para debug
+            echo "Node version: $(node -v)"
+            echo "NPM version: $(npm -v)"
+
+            # === PASO 2: DESPLEGAR EL CÓDIGO ===
+            # Navegar a la carpeta del proyecto
             cd /home/azureuser/gestionformacionfrontend
             
-            # Descarga los últimos cambios de GitHub
+            # Descargar los últimos cambios de GitHub
             git pull origin main
             
-            # Instala dependencias
+            # Instalar dependencias
             npm install
             
-            # Construye la aplicación
+            # Construir la aplicación para producción
             npm run build
             
-            # Copia los nuevos archivos al directorio web de Nginx
+            # Copiar los nuevos archivos al directorio web de Nginx
             sudo cp -r dist/* /var/www/GestionFormacionFrontend/
+            
+            # Asegurar que Nginx tenga los permisos correctos
+            sudo chown -R www-data:www-data /var/www/GestionFormacionFrontend
+            
+            echo "🎉 ¡Despliegue completado!"
