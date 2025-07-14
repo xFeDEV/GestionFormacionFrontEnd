@@ -1,5 +1,5 @@
 // Configuración base de la API
-const baseURL = 'http://145.132.96.47';
+const baseURL = 'https://api.gestionformacion.tech';
 
 // Tipos para mayor robustez
 interface ApiClientOptions {
