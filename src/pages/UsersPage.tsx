@@ -1,34 +1,61 @@
-import { useState, useEffect } from 'react';
-import { userService, User, UpdateUserPayload, CreateUserPayload } from '../api/user.service';
-import BasicTableOne from '../components/tables/BasicTables/BasicTableOne';
-import ComponentCard from '../components/common/ComponentCard';
-import PageBreadCrumb from '../components/common/PageBreadCrumb';
-import EditUserModal from '../components/modals/EditUserModal';
-import CreateUserModal from '../components/modals/CreateUserModal';
-import Button from '../components/ui/button/Button';
-import useAuth from '../hooks/useAuth';
-import Alert from '../components/ui/alert/Alert';
+import { useState, useEffect, useRef } from "react";
+import {
+  userService,
+  User,
+  UpdateUserPayload,
+  CreateUserPayload,
+} from "../api/user.service";
+import BasicTableOne from "../components/tables/BasicTables/BasicTableOne";
+import PageBreadCrumb from "../components/common/PageBreadCrumb";
+import EditUserModal from "../components/modals/EditUserModal";
+import CreateUserModal from "../components/modals/CreateUserModal";
+import useAuth from "../hooks/useAuth";
+import Alert from "../components/ui/alert/Alert";
+
+// Constante fuera del componente para evitar re-renders
+const ALLOWED_ROLES = [1, 2]; // 1: Superadmin, 2: Admin
+
+// Interfaz para los datos del formulario de creación (igual que en CreateUserModal)
+interface CreateUserFormData {
+  nombre_completo: string;
+  identificacion: string;
+  id_rol: number;
+  correo: string;
+  tipo_contrato: string;
+  telefono: string;
+  pass_hash: string;
+}
 
 const UsersPage = () => {
+  // --- ESTADO DEL COMPONENTE ---
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Estado para la búsqueda y filtrado
+  const [filtroNombre, setFiltroNombre] = useState("");
+
+  // Estado para los modales
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const currentUser = useAuth();
-  const allowedRoles = [1, 2]; // 1: Superadmin, 2: Admin
 
-  // Función para obtener usuarios (extraída para reutilización)
+  // Referencia para controlar el scroll y evitar saltos
+  const gestionContainerRef = useRef<HTMLDivElement>(null);
+
+  // Usuario autenticado y roles permitidos
+  const currentUser = useAuth();
+
+  // --- LÓGICA DE DATOS ---
   const fetchUsers = async () => {
     try {
       setLoading(true);
       setError(null);
 
       // Obtener datos del usuario desde localStorage
-      const userDataString = localStorage.getItem('user_data');
+      const userDataString = localStorage.getItem("user_data");
       if (!userDataString) {
-        setError('No se encontraron datos del usuario');
+        setError("No se encontraron datos del usuario");
         return;
       }
 
@@ -36,101 +63,93 @@ const UsersPage = () => {
       const codCentro = userData.cod_centro;
 
       if (!codCentro) {
-        setError('No se encontró el código de centro del usuario');
+        setError("No se encontró el código de centro del usuario");
         return;
       }
 
       // Llamar al servicio para obtener usuarios por centro
       const usersData = await userService.getUsersByCentro(codCentro);
-      
-      // Mapear los datos para convertir id_usuario a id (ya que el API devuelve id_usuario)
-      const mappedUsers = usersData.map(user => ({
+
+      // Mapear los datos para convertir id_usuario a id
+      const mappedUsers = usersData.map((user) => ({
         ...user,
-        id: user.id_usuario || user.id // Usar id_usuario si existe, sino usar id
+        id: user.id_usuario || user.id,
       }));
-      
+
       setUsers(mappedUsers);
     } catch (err) {
-      console.error('Error al obtener usuarios:', err);
-      setError(err instanceof Error ? err.message : 'Error desconocido al obtener usuarios');
+      setError(
+        err instanceof Error ? err.message : "Error al cargar los usuarios"
+      );
+      console.error("Error en fetchUsers:", err);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (currentUser && allowedRoles.includes(currentUser.id_rol)) {
+    if (currentUser && ALLOWED_ROLES.includes(currentUser.id_rol)) {
       fetchUsers();
     }
   }, [currentUser]);
 
-  // Función para abrir el modal de creación
-  const handleOpenCreateModal = () => {
-    setIsCreateModalOpen(true);
-  };
+  // --- DATOS DERIVADOS (Filtrado) ---
+  const usuariosFiltrados = users.filter(
+    (user) =>
+      user.nombre_completo.toLowerCase().includes(filtroNombre.toLowerCase()) ||
+      user.correo.toLowerCase().includes(filtroNombre.toLowerCase())
+  );
 
-  // Función para manejar el clic en el botón "Editar"
+  // --- MANEJADORES DE EVENTOS (HANDLERS) ---
   const handleEditClick = (user: User) => {
     setSelectedUser(user);
-    setIsModalOpen(true);
+    setIsEditModalOpen(true);
   };
 
-  // Función para manejar el cambio de estado del usuario
   const handleStatusChange = async (user: User) => {
     try {
-      // Llamar al servicio para modificar el estado
       await userService.modifyUserStatus(user.id);
-      
-      // Actualizar el usuario en el estado local
-      setUsers(prevUsers =>
-        prevUsers.map(u =>
+      setUsers((prevUsers) =>
+        prevUsers.map((u) =>
           u.id === user.id ? { ...u, estado: !u.estado } : u
         )
       );
     } catch (error) {
-      console.error('Error al cambiar el estado del usuario:', error);
-      // Aquí podrías mostrar un mensaje de error al usuario
+      console.error("Error al cambiar el estado del usuario:", error);
     }
   };
 
-  // Función para crear un nuevo usuario
-  const handleCreateUser = async (formData: any) => {
+  const handleCreateUser = async (formData: CreateUserFormData) => {
     try {
       // Obtener cod_centro del usuario autenticado
-      const userDataString = localStorage.getItem('user_data');
+      const userDataString = localStorage.getItem("user_data");
       if (!userDataString) {
-        throw new Error('No se encontraron datos del usuario autenticado');
+        throw new Error("No se encontraron datos del usuario autenticado");
       }
 
       const userData = JSON.parse(userDataString);
       const codCentro = userData.cod_centro;
 
       if (!codCentro) {
-        throw new Error('No se encontró el código de centro del usuario');
+        throw new Error("No se encontró el código de centro del usuario");
       }
 
       // Construir el payload completo para la API
       const payload: CreateUserPayload = {
         ...formData,
         cod_centro: codCentro,
-        estado: true // Por defecto, los nuevos usuarios están activos
+        estado: true,
       };
 
-      // Llamar al servicio para crear el usuario
       await userService.createUser(payload);
-
-      // Cerrar el modal
       setIsCreateModalOpen(false);
-      
-      // Refrescar la lista de usuarios para mostrar el nuevo usuario
-      await fetchUsers();
+      await fetchUsers(); // Recargar la lista para ver el nuevo usuario
     } catch (error) {
-      console.error('Error al crear el usuario:', error);
-      throw error; // Re-lanzar el error para que el modal lo maneje
+      console.error("Error al crear el usuario:", error);
+      throw error;
     }
   };
 
-  // Función para manejar el guardado de cambios del usuario
   const handleSaveChanges = async (updatedData: UpdateUserPayload) => {
     if (!selectedUser) return;
 
@@ -142,28 +161,30 @@ const UsersPage = () => {
         payloadParaActualizar.correo = correo;
       }
 
-      // Llamar al servicio para actualizar el usuario
       await userService.updateUser(selectedUser.id, payloadParaActualizar);
-      
-      // ¡Línea clave! Volver a cargar los usuarios para refrescar la tabla
-      await fetchUsers();
-      
-      // Cerrar el modal
-      setIsModalOpen(false);
+      await fetchUsers(); // Recargar la lista para ver los cambios
+      setIsEditModalOpen(false);
       setSelectedUser(null);
     } catch (error) {
-      console.error('Error al actualizar el usuario:', error);
-      throw error; // Re-lanzar el error para que el modal lo maneje
+      console.error("Error al actualizar el usuario:", error);
+      throw error;
     }
   };
 
-  // Si el hook todavía está cargando el usuario, no muestres nada o un spinner.
+  // Si el hook todavía está cargando el usuario, mostrar verificación
   if (!currentUser) {
-    return <div className="text-center">Verificando acceso...</div>;
+    return (
+      <div className="flex items-center justify-center py-8">
+        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#39A900]"></div>
+        <span className="ml-3 text-gray-600 dark:text-gray-300">
+          Verificando acceso...
+        </span>
+      </div>
+    );
   }
 
-  // Si el rol del usuario no está permitido, muestra el mensaje de acceso denegado.
-  if (!currentUser.id_rol || !allowedRoles.includes(currentUser.id_rol)) {
+  // Si el rol del usuario no está permitido, mostrar acceso denegado
+  if (!currentUser.id_rol || !ALLOWED_ROLES.includes(currentUser.id_rol)) {
     return (
       <Alert
         variant="error"
@@ -173,79 +194,114 @@ const UsersPage = () => {
     );
   }
 
+  // --- RENDERIZADO DEL COMPONENTE ---
   return (
-    <div className="space-y-6">
-      <PageBreadCrumb pageTitle="Usuarios del Centro" />
+    <>
+      <PageBreadCrumb pageTitle="Gestión de Usuarios" />
 
-      <ComponentCard title="Lista de Usuarios" desc="Usuarios registrados en el centro">
-        {/* Botón Crear Usuario */}
-        <div className="mb-4 flex justify-end">
-          <Button
-            onClick={handleOpenCreateModal}
-            className="bg-blue-600 hover:bg-blue-700 text-white"
+      <div
+        ref={gestionContainerRef}
+        className="rounded-2xl border border-gray-200 bg-white p-5 mt-6 dark:border-gray-800 dark:bg-white/[0.03]"
+      >
+        <h3 className="mb-5 text-lg font-semibold text-gray-800 dark:text-white/90">
+          Usuarios del Centro
+        </h3>
+
+        {/* Barra de Búsqueda y Botón Crear */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center mb-5">
+          <div className="relative w-full sm:w-80">
+            <input
+              type="text"
+              placeholder="Buscar por nombre o correo..."
+              value={filtroNombre}
+              onChange={(e) => setFiltroNombre(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+            />
+          </div>
+          <button
+            onClick={() => setIsCreateModalOpen(true)}
+            className="w-full sm:w-auto px-4 py-2 bg-[#39A900] text-white rounded-md hover:bg-[#2d8000] transition-colors flex items-center justify-center gap-2 whitespace-nowrap"
           >
-            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                clipRule="evenodd"
+              />
             </svg>
             Crear Usuario
-          </Button>
+          </button>
         </div>
 
+        {/* Estados de Carga y Error */}
+        {error && <div className="text-red-500 text-center mb-4">{error}</div>}
+
+        {/* Tabla de Usuarios */}
         {loading ? (
-          <div className="flex justify-center items-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            <span className="ml-2 text-gray-600 dark:text-gray-300">Cargando usuarios...</span>
+          <div className="flex items-center justify-center py-10">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#39A900]"></div>
+            <span className="ml-3 text-gray-600 dark:text-gray-300">
+              Cargando usuarios...
+            </span>
           </div>
-        ) : error ? (
-          <div className="text-center py-8">
-            <div className="text-red-600 dark:text-red-400 mb-2">
-              <svg className="mx-auto h-12 w-12 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.732 15.5c-.77.833.192 2.5 1.732 2.5z" />
-              </svg>
-              Error al cargar usuarios
-            </div>
-            <p className="text-gray-600 dark:text-gray-300">{error}</p>
-          </div>
-        ) : users.length === 0 ? (
-          <div className="text-center py-8">
+        ) : usuariosFiltrados.length === 0 ? (
+          <div className="text-center py-10">
             <div className="text-gray-500 dark:text-gray-400 mb-2">
-              <svg className="mx-auto h-12 w-12 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+              <svg
+                className="mx-auto h-12 w-12 mb-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"
+                />
               </svg>
-              No hay usuarios disponibles
+              {filtroNombre
+                ? "No se encontraron usuarios con ese filtro"
+                : "No hay usuarios disponibles"}
             </div>
             <p className="text-gray-600 dark:text-gray-300">
-              No se encontraron usuarios para este centro.
+              {filtroNombre
+                ? "Intenta con un término de búsqueda diferente."
+                : "No se encontraron usuarios para este centro."}
             </p>
           </div>
         ) : (
-          <BasicTableOne 
-            tableData={users} 
+          <BasicTableOne
+            tableData={usuariosFiltrados}
             onEditClick={handleEditClick}
             onStatusChange={handleStatusChange}
           />
         )}
-      </ComponentCard>
+      </div>
 
-      {/* Modal de Edición */}
+      {/* Renderizado de Modales */}
       <EditUserModal
-        isOpen={isModalOpen}
+        isOpen={isEditModalOpen}
         onClose={() => {
-          setIsModalOpen(false);
+          setIsEditModalOpen(false);
           setSelectedUser(null);
         }}
         userData={selectedUser || undefined}
         onSave={handleSaveChanges}
       />
 
-      {/* Modal de Creación */}
       <CreateUserModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         onSave={handleCreateUser}
       />
-    </div>
+    </>
   );
 };
 
-export default UsersPage; 
+export default UsersPage;
