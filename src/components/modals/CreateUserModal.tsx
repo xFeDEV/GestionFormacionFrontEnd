@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import { Modal } from '../ui/modal';
-import InputField from '../form/input/InputField';
-import Select from '../form/Select';
-import Label from '../form/Label';
-import Button from '../ui/button/Button';
+import React, { useState } from "react";
+import { Modal } from "../ui/modal";
+import InputField from "../form/input/InputField";
+import Select from "../form/Select";
+import Label from "../form/Label";
+import Button from "../ui/button/Button";
 
 interface CreateUserModalProps {
   isOpen: boolean;
@@ -24,16 +24,16 @@ interface CreateUserFormData {
 const CreateUserModal: React.FC<CreateUserModalProps> = ({
   isOpen,
   onClose,
-  onSave
+  onSave,
 }) => {
   const [formData, setFormData] = useState<CreateUserFormData>({
-    nombre_completo: '',
-    identificacion: '',
+    nombre_completo: "",
+    identificacion: "",
     id_rol: 1,
-    correo: '',
-    tipo_contrato: '',
-    telefono: '',
-    pass_hash: ''
+    correo: "",
+    tipo_contrato: "",
+    telefono: "",
+    pass_hash: "",
   });
 
   const [loading, setLoading] = useState(false);
@@ -41,29 +41,29 @@ const CreateUserModal: React.FC<CreateUserModalProps> = ({
 
   // Opciones para los selects
   const roleOptions = [
-    { value: '1', label: 'Superadmin' },
-    { value: '2', label: 'Admin' },
-    { value: '3', label: 'Instructor' }
+    { value: "1", label: "Superadmin" },
+    { value: "2", label: "Admin" },
+    { value: "3", label: "Instructor" },
   ];
 
   const contractOptions = [
-    { value: 'Indefinido', label: 'Indefinido' },
-    { value: 'Temporal', label: 'Temporal' },
-    { value: 'Prácticas', label: 'Prácticas' },
-    { value: 'Freelance', label: 'Freelance' }
+    { value: "Indefinido", label: "Indefinido" },
+    { value: "Temporal", label: "Temporal" },
+    { value: "Prácticas", label: "Prácticas" },
+    { value: "Freelance", label: "Freelance" },
   ];
 
   // Manejar cambios en los inputs de texto
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
-    
+
     // Limpiar error del campo si existe
     if (errors[name]) {
-      setErrors(prev => {
+      setErrors((prev) => {
         const newErrors = { ...prev };
         delete newErrors[name];
         return newErrors;
@@ -73,13 +73,13 @@ const CreateUserModal: React.FC<CreateUserModalProps> = ({
 
   // Manejar cambios en el select de rol
   const handleRoleChange = (value: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      id_rol: Number(value)
+      id_rol: Number(value),
     }));
-    
+
     if (errors.id_rol) {
-      setErrors(prev => {
+      setErrors((prev) => {
         const newErrors = { ...prev };
         delete newErrors.id_rol;
         return newErrors;
@@ -89,13 +89,13 @@ const CreateUserModal: React.FC<CreateUserModalProps> = ({
 
   // Manejar cambios en el select de tipo de contrato
   const handleContractChange = (value: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      tipo_contrato: value
+      tipo_contrato: value,
     }));
-    
+
     if (errors.tipo_contrato) {
-      setErrors(prev => {
+      setErrors((prev) => {
         const newErrors = { ...prev };
         delete newErrors.tipo_contrato;
         return newErrors;
@@ -108,35 +108,35 @@ const CreateUserModal: React.FC<CreateUserModalProps> = ({
     const newErrors: Record<string, string> = {};
 
     if (!formData.nombre_completo.trim()) {
-      newErrors.nombre_completo = 'El nombre completo es requerido';
+      newErrors.nombre_completo = "El nombre completo es requerido";
     }
 
     if (!formData.identificacion.trim()) {
-      newErrors.identificacion = 'La identificación es requerida';
+      newErrors.identificacion = "La identificación es requerida";
     }
 
     if (!formData.correo.trim()) {
-      newErrors.correo = 'El correo es requerido';
+      newErrors.correo = "El correo es requerido";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.correo)) {
-      newErrors.correo = 'El formato del correo no es válido';
+      newErrors.correo = "El formato del correo no es válido";
     }
 
     if (!formData.tipo_contrato.trim()) {
-      newErrors.tipo_contrato = 'El tipo de contrato es requerido';
+      newErrors.tipo_contrato = "El tipo de contrato es requerido";
     }
 
     if (!formData.telefono.trim()) {
-      newErrors.telefono = 'El teléfono es requerido';
+      newErrors.telefono = "El teléfono es requerido";
     }
 
     if (!formData.pass_hash.trim()) {
-      newErrors.pass_hash = 'La contraseña es requerida';
+      newErrors.pass_hash = "La contraseña es requerida";
     } else if (formData.pass_hash.length < 6) {
-      newErrors.pass_hash = 'La contraseña debe tener al menos 6 caracteres';
+      newErrors.pass_hash = "La contraseña debe tener al menos 6 caracteres";
     }
 
     if (!formData.id_rol) {
-      newErrors.id_rol = 'Debe seleccionar un rol';
+      newErrors.id_rol = "Debe seleccionar un rol";
     }
 
     setErrors(newErrors);
@@ -146,7 +146,7 @@ const CreateUserModal: React.FC<CreateUserModalProps> = ({
   // Manejar envío del formulario
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
@@ -156,7 +156,7 @@ const CreateUserModal: React.FC<CreateUserModalProps> = ({
       await onSave(formData);
       handleClose();
     } catch (error) {
-      console.error('Error al crear usuario:', error);
+      console.error("Error al crear usuario:", error);
     } finally {
       setLoading(false);
     }
@@ -165,13 +165,13 @@ const CreateUserModal: React.FC<CreateUserModalProps> = ({
   // Cerrar modal y limpiar formulario
   const handleClose = () => {
     setFormData({
-      nombre_completo: '',
-      identificacion: '',
+      nombre_completo: "",
+      identificacion: "",
       id_rol: 1,
-      correo: '',
-      tipo_contrato: '',
-      telefono: '',
-      pass_hash: ''
+      correo: "",
+      tipo_contrato: "",
+      telefono: "",
+      pass_hash: "",
     });
     setErrors({});
     onClose();
@@ -183,7 +183,7 @@ const CreateUserModal: React.FC<CreateUserModalProps> = ({
         <h2 className="text-2xl font-bold mb-6 text-center text-gray-900 dark:text-white">
           Crear Nuevo Usuario
         </h2>
-        
+
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Nombre Completo */}
           <div>
@@ -233,38 +233,41 @@ const CreateUserModal: React.FC<CreateUserModalProps> = ({
             />
           </div>
 
-          {/* Rol */}
-          <div>
-            <Label htmlFor="id_rol">Rol</Label>
-            <Select
-              options={roleOptions}
-              placeholder="Seleccionar rol"
-              onChange={handleRoleChange}
-              defaultValue={formData.id_rol.toString()}
-              className={errors.id_rol ? 'border-red-500' : ''}
-            />
-            {errors.id_rol && (
-              <p className="mt-1.5 text-xs text-red-600 dark:text-red-400">
-                {errors.id_rol}
-              </p>
-            )}
-          </div>
+          {/* Rol y Tipo de Contrato en la misma fila */}
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            {/* Rol */}
+            <div>
+              <Label htmlFor="id_rol">Rol</Label>
+              <Select
+                options={roleOptions}
+                placeholder="Seleccionar rol"
+                onChange={handleRoleChange}
+                defaultValue={formData.id_rol.toString()}
+                className={errors.id_rol ? "border-red-500" : ""}
+              />
+              {errors.id_rol && (
+                <p className="mt-1.5 text-xs text-red-600 dark:text-red-400">
+                  {errors.id_rol}
+                </p>
+              )}
+            </div>
 
-          {/* Tipo de Contrato */}
-          <div>
-            <Label htmlFor="tipo_contrato">Tipo de Contrato</Label>
-            <Select
-              options={contractOptions}
-              placeholder="Seleccionar tipo de contrato"
-              onChange={handleContractChange}
-              defaultValue={formData.tipo_contrato}
-              className={errors.tipo_contrato ? 'border-red-500' : ''}
-            />
-            {errors.tipo_contrato && (
-              <p className="mt-1.5 text-xs text-red-600 dark:text-red-400">
-                {errors.tipo_contrato}
-              </p>
-            )}
+            {/* Tipo de Contrato */}
+            <div>
+              <Label htmlFor="tipo_contrato">Tipo de Contrato</Label>
+              <Select
+                options={contractOptions}
+                placeholder="Seleccionar tipo de contrato"
+                onChange={handleContractChange}
+                defaultValue={formData.tipo_contrato}
+                className={errors.tipo_contrato ? "border-red-500" : ""}
+              />
+              {errors.tipo_contrato && (
+                <p className="mt-1.5 text-xs text-red-600 dark:text-red-400">
+                  {errors.tipo_contrato}
+                </p>
+              )}
+            </div>
           </div>
 
           {/* Teléfono */}
@@ -301,11 +304,7 @@ const CreateUserModal: React.FC<CreateUserModalProps> = ({
 
           {/* Botones */}
           <div className="flex justify-end space-x-3 pt-4">
-            <Button
-              onClick={handleClose}
-              variant="outline"
-              disabled={loading}
-            >
+            <Button onClick={handleClose} variant="outline" disabled={loading}>
               Cancelar
             </Button>
             <button
@@ -313,7 +312,7 @@ const CreateUserModal: React.FC<CreateUserModalProps> = ({
               disabled={loading}
               className="inline-flex items-center justify-center gap-2 rounded-lg transition px-5 py-3.5 text-sm bg-blue-600 text-white shadow-theme-xs hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Creando...' : 'Crear Usuario'}
+              {loading ? "Creando..." : "Crear Usuario"}
             </button>
           </div>
         </form>
@@ -322,4 +321,4 @@ const CreateUserModal: React.FC<CreateUserModalProps> = ({
   );
 };
 
-export default CreateUserModal; 
+export default CreateUserModal;

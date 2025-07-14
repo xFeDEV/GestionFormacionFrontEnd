@@ -21,33 +21,28 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.VM_PORT }}
           script: |
-            # --- PASO 1: NAVEGAR AL DIRECTORIO ---
+            # --- PASO 1: PREPARAR ENTORNO Y CÓDIGO ---
             cd /home/azureuser/gestionformacionfrontend
-            
-            # --- PASO 2: ACTUALIZAR EL CÓDIGO ---
-            # Forza la rama local a ser idéntica a la de GitHub
-            echo "🔄 Actualizando código fuente desde GitHub..."
+            echo "🔄 Actualizando código fuente..."
             git fetch origin
             git reset --hard origin/main
             
-            # --- PASO 3: CONSTRUIR LA APLICACIÓN (como 'azureuser') ---
-            # Cargar NVM para que 'npm' esté disponible en esta sesión
+            # --- PASO 2: CONSTRUIR (como azureuser) ---
             echo "📦 Preparando entorno de Node.js..."
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
             
-            # Instalar dependencias y construir el proyecto
             echo "⚙️ Instalando dependencias..."
             npm install
             
             echo "🔨 Construyendo la aplicación..."
             npm run build
             
-            # --- PASO 4: DESPLEGAR LOS ARCHIVOS (con 'sudo') ---
-            echo "🚀 Copiando archivos construidos a Nginx..."
-            sudo cp -r dist/* /var/www/GestionFormacionFrontend/
+            # --- PASO 3: DESPLEGAR (con sudo) ---
+            echo "🚀 Copiando archivos a Nginx..."
+            sudo cp -rf dist/* /var/www/GestionFormacionFrontend/
             
-            echo "🔒 Ajustando permisos para el servidor web..."
+            echo "🔒 Ajustando permisos para Nginx..."
             sudo chown -R www-data:www-data /var/www/GestionFormacionFrontend
             
-            echo "✅ ¡Despliegue completado con éxito!"
+            echo "✅ ¡Despliegue completado!"
