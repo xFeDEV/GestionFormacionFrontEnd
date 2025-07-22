@@ -6,6 +6,7 @@ import EditGrupoModal from '../../components/modals/EditGrupoModal';
 import Button from '../../components/ui/button/Button';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '../../components/ui/table';
 import Badge from '../../components/ui/badge/Badge';
+import PageMeta from "../../components/common/PageMeta";
 
 const GrupoPage = () => {
   const [grupos, setGrupos] = useState<Grupo[]>([]);
@@ -110,6 +111,10 @@ const GrupoPage = () => {
 
   return (
     <div className="space-y-6">
+      <PageMeta
+                title="Gestion Formacion | SENA"
+                description="Gestion de grupos"
+            />
       <PageBreadCrumb pageTitle="Gestión de Grupos" />
 
       <ComponentCard title="Listado de Grupos de Formación" desc="Busque y administre los grupos de su centro.">

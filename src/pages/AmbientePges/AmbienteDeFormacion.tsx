@@ -7,7 +7,7 @@ export default function AmbienteDeFormacion() {
     return (
         <>
             <PageMeta
-                title="Gestion Formacion - Ambiente de Formacion"
+                title="Gestion Formacion | SENA"
                 description="Gestion de ambientes de formacion"
             />
             <PageBreadcrumb pageTitle="Ambiente de Formación" />

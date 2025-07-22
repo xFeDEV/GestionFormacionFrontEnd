@@ -6,6 +6,7 @@ import Alert from '../../components/ui/alert/Alert';
 import Button from '../../components/ui/button/Button';
 import { fileService } from '../../api/file.service';
 import { FileIcon, TrashBinIcon, DownloadIcon } from '../../icons';
+import PageMeta from "../../components/common/PageMeta";
 
 const CargaMasivaPage: React.FC = () => {
   // Estados para el archivo PE-04
@@ -124,6 +125,10 @@ const CargaMasivaPage: React.FC = () => {
 
   return (
     <>
+      <PageMeta
+                title="Gestion Formacion | SENA"
+                description="Gestion de carga masiva"
+            />
       <PageBreadcrumb pageTitle="Carga Masiva de Datos" />
       
       {/* Tarjeta para PE-04 */}
