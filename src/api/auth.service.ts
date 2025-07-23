@@ -1,4 +1,5 @@
-import { apiClient } from './apiClient';
+import { apiClient } from "./apiClient";
+import { User } from "./user.service";
 
 // Interfaz para describir la estructura de la respuesta exitosa del login
 export interface LoginResponse {
@@ -17,26 +18,29 @@ export interface LoginResponse {
  * @param password - Contraseña del usuario
  * @returns Promise con los datos de la respuesta del login
  */
-const login = async (email: string, password: string): Promise<LoginResponse> => {
+const login = async (
+  email: string,
+  password: string
+): Promise<LoginResponse> => {
   try {
     // Crear el cuerpo de la petición en formato x-www-form-urlencoded
     const body = {
       username: email, // La API espera 'username' en lugar de 'email'
-      password: password
+      password: password,
     };
 
     // Realizar la petición de login con la cabecera Content-Type correcta
-    const response = await apiClient('/access/token', 'POST', {
+    const response = await apiClient("/access/token", "POST", {
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
+        "Content-Type": "application/x-www-form-urlencoded",
       },
-      body
+      body,
     });
 
     // Guardar el token y los datos del usuario en localStorage
     if (response.access_token) {
-      localStorage.setItem('access_token', response.access_token);
-      localStorage.setItem('user_data', JSON.stringify(response.user));
+      localStorage.setItem("access_token", response.access_token);
+      localStorage.setItem("user_data", JSON.stringify(response.user));
     }
 
     return response;
@@ -51,8 +55,8 @@ const login = async (email: string, password: string): Promise<LoginResponse> =>
  * Elimina el token de acceso y los datos del usuario del localStorage
  */
 const logout = (): void => {
-  localStorage.removeItem('access_token');
-  localStorage.removeItem('user_data');
+  localStorage.removeItem("access_token");
+  localStorage.removeItem("user_data");
 };
 
 /**
@@ -60,15 +64,15 @@ const logout = (): void => {
  * @returns El token de acceso o null si no existe
  */
 const getToken = (): string | null => {
-  return localStorage.getItem('access_token');
+  return localStorage.getItem("access_token");
 };
 
 /**
  * Función para obtener los datos del usuario almacenados en localStorage
  * @returns Los datos del usuario o null si no existen
  */
-const getUserData = (): LoginResponse['user'] | null => {
-  const userData = localStorage.getItem('user_data');
+const getUserData = (): LoginResponse["user"] | null => {
+  const userData = localStorage.getItem("user_data");
   return userData ? JSON.parse(userData) : null;
 };
 
@@ -80,11 +84,39 @@ const isAuthenticated = (): boolean => {
   return !!getToken();
 };
 
+/**
+ * Función para actualizar los datos del usuario en localStorage
+ * @param updatedData - Datos parciales del usuario a actualizar
+ */
+const updateLocalUserData = (updatedData: Partial<User>): void => {
+  // Obtener los datos actuales del usuario desde localStorage
+  const currentUserData = localStorage.getItem("user_data");
+
+  if (currentUserData) {
+    try {
+      // Parsear los datos actuales del usuario
+      const currentUser = JSON.parse(currentUserData);
+
+      // Fusionar los datos antiguos con los nuevos (los nuevos sobrescriben a los viejos)
+      const updatedUser = { ...currentUser, ...updatedData };
+
+      // Guardar el nuevo objeto fusionado de vuelta en localStorage
+      localStorage.setItem("user_data", JSON.stringify(updatedUser));
+    } catch (error) {
+      console.error(
+        "Error al actualizar los datos del usuario en localStorage:",
+        error
+      );
+    }
+  }
+};
+
 // Exportar las funciones como un objeto authService
 export const authService = {
   login,
   logout,
   getToken,
   getUserData,
-  isAuthenticated
+  isAuthenticated,
+  updateLocalUserData,
 };
