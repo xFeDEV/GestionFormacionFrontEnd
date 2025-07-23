@@ -64,6 +64,27 @@ export default function UserDropdown() {
     }
   }
 
+  // Generar las iniciales del usuario
+  const initials = user?.nombre_completo
+    ? (() => {
+        const nombreCompleto = user.nombre_completo.trim();
+        if (!nombreCompleto) return "";
+
+        const palabras = nombreCompleto.split(/\s+/);
+
+        if (palabras.length >= 2) {
+          // Si hay dos o más palabras, tomar la primera letra de las dos primeras
+          return (palabras[0][0] + palabras[1][0]).toUpperCase();
+        } else {
+          // Si solo hay una palabra, tomar las dos primeras letras
+          const palabra = palabras[0];
+          return palabra.length >= 2
+            ? (palabra[0] + palabra[1]).toUpperCase()
+            : palabra[0].toUpperCase();
+        }
+      })()
+    : "";
+
   return (
     <div className="relative">
       <button
@@ -71,11 +92,9 @@ export default function UserDropdown() {
         className="flex items-center text-gray-700 dropdown-toggle dark:text-gray-400"
       >
         <span className="mr-3 overflow-hidden rounded-full h-11 w-11">
-          <img
-            src="/images/user/owner.jpg"
-            alt={user?.nombre_completo || "Usuario"}
-            className="w-full h-full object-cover"
-          />
+          <div className="w-full h-full rounded-full bg-green-600 flex items-center justify-center">
+            <span className="text-lg font-bold text-white">{initials}</span>
+          </div>
         </span>
 
         <span className="block mr-1 font-medium text-theme-sm">
