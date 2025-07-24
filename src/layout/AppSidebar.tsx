@@ -20,7 +20,6 @@ import {
 } from "../icons";
 import { useSidebar } from "../context/SidebarContext";
 
-
 type NavItem = {
   name: string;
   icon: React.ReactNode;
@@ -66,7 +65,7 @@ const navItems: NavItem[] = [
   },
   {
     icon: <UserCircleIcon />,
-    name: "User Profile",
+    name: "Perfil de Usuario",
     path: "/profile",
   },
   {
@@ -413,7 +412,6 @@ const AppSidebar: React.FC = () => {
             </div>
           </div>
         </nav>
-        
       </div>
     </aside>
   );
