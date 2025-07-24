@@ -308,12 +308,15 @@ layer(base);
 }
 
 .apexcharts-text.apexcharts-pie-label {
-  fill: #111 !important;
+  fill: #fff !important;
 }
 .dark .apexcharts-text.apexcharts-pie-label {
   fill: #fff !important;
 }
 
+.apexcharts-tooltip {
+  color: #fff !important;
+}
 .apexcharts-tooltip.apexcharts-theme-light {
   @apply gap-1 !rounded-lg !border-gray-200 p-3 !shadow-theme-sm dark:!border-gray-800 dark:!bg-gray-900;
 }

@@ -1,7 +1,13 @@
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
+import { useTheme } from "../../context/ThemeContext";
 
 export default function ModalityChart() {
+  const { theme } = useTheme();
+
+  const lightColors = ["#465fff", "#3B82F6", "#1E40AF"];
+  const darkColors = ["#1E40AF", "#3B82F6", "#465fff"];
+
   const options: ApexOptions = {
     chart: {
       fontFamily: "Outfit, sans-serif",
@@ -11,8 +17,8 @@ export default function ModalityChart() {
         show: false,
       },
     },
-    colors: ["#3db767", "#4f61ff", "#6edaff", "#e86d0f", "#e64132"],
-    labels: ["Enero", "Febrero", "Marzo", "Abril", "Mayo"],
+    colors: theme === "dark" ? darkColors : lightColors,
+    labels: ["A DISTANCIA", "PRESENCIAL", "VIRTUAL"],
     legend: {
       show: true,
       position: "bottom",
@@ -27,13 +33,18 @@ export default function ModalityChart() {
     },
     
     tooltip: {
+      theme: "light",
+      fillSeriesColor: false,
       y: {
         formatter: (val: number) => `${val}`,
+        title: {
+          formatter: (seriesName: string) => seriesName,
+        },
       },
     },
   };
 
-  const series = [44, 55, 13, 43, 22];
+  const series = [44, 55, 22];
  
   return (
     <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white px-5 pt-5 dark:border-gray-800 dark:bg-white/[0.03] sm:px-6 sm:pt-6">
@@ -45,7 +56,7 @@ export default function ModalityChart() {
       </div>
       <div className="max-w-full overflow-x-auto custom-scrollbar">
         <div className="min-w-[400px]">
-          <Chart options={options} series={series} type="pie" height={407} />
+          <Chart key={theme} options={options} series={series} type="pie" height={407} />
         </div>
       </div>
     </div>
