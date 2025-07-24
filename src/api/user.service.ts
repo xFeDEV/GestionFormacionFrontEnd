@@ -1,4 +1,4 @@
-import { apiClient } from './apiClient';
+import { apiClient } from "./apiClient";
 
 // Interfaz para describir la estructura de los datos del usuario
 export interface User {
@@ -39,6 +39,12 @@ export interface CreateUserPayload {
   pass_hash: string;
 }
 
+// Interfaz para el payload de cambio de contraseña
+export interface UpdatePasswordPayload {
+  current_password: string;
+  new_password: string;
+}
+
 /**
  * Función para obtener los datos del usuario autenticado
  * Utiliza el token almacenado automáticamente a través de apiClient
@@ -48,23 +54,27 @@ const getMe = async (): Promise<User> => {
   try {
     // Realizar petición GET al endpoint /users/me
     // El apiClient se encarga de añadir automáticamente el token de autorización
-    const userData = await apiClient('/users/me', 'GET');
-    
+    const userData = await apiClient("/users/me", "GET");
+
     // Actualizar los datos del usuario en localStorage si es necesario
     if (userData) {
-      localStorage.setItem('user_data', JSON.stringify(userData));
+      localStorage.setItem("user_data", JSON.stringify(userData));
     }
-    
+
     return userData;
   } catch (error) {
     // Manejar errores específicos de autorización
-    if (error instanceof Error && 'status' in error && (error as any).status === 401) {
+    if (
+      error instanceof Error &&
+      "status" in error &&
+      (error as any).status === 401
+    ) {
       // Token expirado o inválido, limpiar localStorage
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('user_data');
-      throw new Error('Sesión expirada. Por favor, inicia sesión nuevamente.');
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("user_data");
+      throw new Error("Sesión expirada. Por favor, inicia sesión nuevamente.");
     }
-    
+
     // Re-lanzar cualquier otro error
     throw error;
   }
@@ -79,21 +89,25 @@ const getUsersByCentro = async (cod_centro: number): Promise<User[]> => {
   try {
     // Construir la URL con el query parameter
     const endpoint = `/users/get-by-centro?cod_centro=${cod_centro}`;
-    
+
     // Realizar petición GET al endpoint con el cod_centro como query parameter
     // El apiClient se encarga de añadir automáticamente el token de autorización
-    const usersData = await apiClient(endpoint, 'GET');
-    
+    const usersData = await apiClient(endpoint, "GET");
+
     return usersData;
   } catch (error) {
     // Manejar errores específicos de autorización
-    if (error instanceof Error && 'status' in error && (error as any).status === 401) {
+    if (
+      error instanceof Error &&
+      "status" in error &&
+      (error as any).status === 401
+    ) {
       // Token expirado o inválido, limpiar localStorage
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('user_data');
-      throw new Error('Sesión expirada. Por favor, inicia sesión nuevamente.');
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("user_data");
+      throw new Error("Sesión expirada. Por favor, inicia sesión nuevamente.");
     }
-    
+
     // Re-lanzar cualquier otro error
     throw error;
   }
@@ -108,16 +122,20 @@ const modifyUserStatus = async (userId: number): Promise<void> => {
   try {
     // Realizar petición PUT al endpoint /users/modify-status/{userId}
     // El apiClient se encarga de añadir automáticamente el token de autorización
-    await apiClient(`/users/modify-status/${userId}`, 'PUT');
+    await apiClient(`/users/modify-status/${userId}`, "PUT");
   } catch (error) {
     // Manejar errores específicos de autorización
-    if (error instanceof Error && 'status' in error && (error as any).status === 401) {
+    if (
+      error instanceof Error &&
+      "status" in error &&
+      (error as any).status === 401
+    ) {
       // Token expirado o inválido, limpiar localStorage
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('user_data');
-      throw new Error('Sesión expirada. Por favor, inicia sesión nuevamente.');
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("user_data");
+      throw new Error("Sesión expirada. Por favor, inicia sesión nuevamente.");
     }
-    
+
     // Re-lanzar cualquier otro error
     throw error;
   }
@@ -129,23 +147,32 @@ const modifyUserStatus = async (userId: number): Promise<void> => {
  * @param payload - Datos a actualizar del usuario
  * @returns Promise con la respuesta del servidor
  */
-const updateUser = async (userId: number, payload: UpdateUserPayload): Promise<User> => {
+const updateUser = async (
+  userId: number,
+  payload: UpdateUserPayload
+): Promise<User> => {
   try {
     // Realizar petición PUT al endpoint /users/update/{userId}
     // El apiClient se encarga de añadir automáticamente el token de autorización
     // y el Content-Type: application/json
-    const updatedUser = await apiClient(`/users/update/${userId}`, 'PUT', { body: payload });
-    
+    const updatedUser = await apiClient(`/users/update/${userId}`, "PUT", {
+      body: payload,
+    });
+
     return updatedUser;
   } catch (error) {
     // Manejar errores específicos de autorización
-    if (error instanceof Error && 'status' in error && (error as any).status === 401) {
+    if (
+      error instanceof Error &&
+      "status" in error &&
+      (error as any).status === 401
+    ) {
       // Token expirado o inválido, limpiar localStorage
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('user_data');
-      throw new Error('Sesión expirada. Por favor, inicia sesión nuevamente.');
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("user_data");
+      throw new Error("Sesión expirada. Por favor, inicia sesión nuevamente.");
     }
-    
+
     // Re-lanzar cualquier otro error
     throw error;
   }
@@ -161,18 +188,22 @@ const createUser = async (payload: CreateUserPayload): Promise<User> => {
     // Realizar petición POST al endpoint /users/create
     // El apiClient se encarga de añadir automáticamente el token de autorización
     // y el Content-Type: application/json
-    const newUser = await apiClient('/users/create', 'POST', { body: payload });
-    
+    const newUser = await apiClient("/users/create", "POST", { body: payload });
+
     return newUser;
   } catch (error) {
     // Manejar errores específicos de autorización
-    if (error instanceof Error && 'status' in error && (error as any).status === 401) {
+    if (
+      error instanceof Error &&
+      "status" in error &&
+      (error as any).status === 401
+    ) {
       // Token expirado o inválido, limpiar localStorage
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('user_data');
-      throw new Error('Sesión expirada. Por favor, inicia sesión nuevamente.');
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("user_data");
+      throw new Error("Sesión expirada. Por favor, inicia sesión nuevamente.");
     }
-    
+
     // Re-lanzar cualquier otro error
     throw error;
   }
@@ -187,6 +218,37 @@ const refreshUserData = async (): Promise<User> => {
   return await getMe();
 };
 
+/**
+ * Función para cambiar la contraseña del usuario
+ * @param payload - Datos con la contraseña actual y nueva
+ * @returns Promise con la respuesta del servidor
+ */
+const updatePassword = async (
+  payload: UpdatePasswordPayload
+): Promise<void> => {
+  try {
+    // Realizar petición PUT al endpoint /users/update-password
+    // El apiClient se encarga de añadir automáticamente el token de autorización
+    // y el Content-Type: application/json
+    await apiClient("/users/change-password", "PUT", { body: payload });
+  } catch (error) {
+    // Manejar errores específicos de autorización
+    if (
+      error instanceof Error &&
+      "status" in error &&
+      (error as any).status === 401
+    ) {
+      // Token expirado o inválido, limpiar localStorage
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("user_data");
+      throw new Error("Sesión expirada. Por favor, inicia sesión nuevamente.");
+    }
+
+    // Re-lanzar cualquier otro error
+    throw error;
+  }
+};
+
 // Exportar las funciones como un objeto userService
 export const userService = {
   getMe,
@@ -194,5 +256,6 @@ export const userService = {
   modifyUserStatus,
   updateUser,
   createUser,
-  refreshUserData
+  refreshUserData,
+  updatePassword,
 };

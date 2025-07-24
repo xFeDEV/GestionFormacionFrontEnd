@@ -3,11 +3,31 @@ import UserMetaCard from "../components/UserProfile/UserMetaCard";
 import UserInfoCard from "../components/UserProfile/UserInfoCard";
 import PageMeta from "../components/common/PageMeta";
 import useAuth from "../hooks/useAuth";
-import { userService, UpdateUserPayload } from "../api/user.service";
+import {
+  userService,
+  UpdateUserPayload,
+  UpdatePasswordPayload,
+} from "../api/user.service";
 import { authService } from "../api/auth.service";
+import ChangePasswordModal from "../components/modals/ChangePasswordModal";
+import { useState } from "react";
 
 export default function UserProfiles() {
   const currentUser = useAuth();
+  const [isChangePasswordModalOpen, setChangePasswordModalOpen] =
+    useState(false);
+
+  // Función para manejar el cambio de contraseña
+  const handleChangePassword = async (payload: UpdatePasswordPayload) => {
+    try {
+      await userService.updatePassword(payload);
+      // En el futuro se puede implementar un sistema de notificaciones
+    } catch (error) {
+      console.error("Error al cambiar la contraseña:", error);
+      // Re-lanzar el error para que el modal lo maneje
+      throw error;
+    }
+  };
 
   // Función para manejar la actualización de datos del usuario
   const handleUpdateUser = async (updatedData: UpdateUserPayload) => {
@@ -72,10 +92,17 @@ export default function UserProfiles() {
               estado: true,
             }}
             onSave={handleUpdateUser}
+            onChangePasswordClick={() => setChangePasswordModalOpen(true)}
           />
           {/* <UserAddressCard /> */}
         </div>
       </div>
+
+      <ChangePasswordModal
+        isOpen={isChangePasswordModalOpen}
+        onClose={() => setChangePasswordModalOpen(false)}
+        onSave={handleChangePassword}
+      />
     </>
   );
 }
