@@ -43,7 +43,7 @@ const ForgotPasswordForm: React.FC = () => {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 dark:bg-gray-900 sm:px-6 lg:px-8">
+    <div className="flex flex-col flex-1 items-center">
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
           <a
