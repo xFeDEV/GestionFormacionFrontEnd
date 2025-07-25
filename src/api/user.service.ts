@@ -45,6 +45,12 @@ export interface UpdatePasswordPayload {
   new_password: string;
 }
 
+// Interfaz para el payload de restablecimiento de contraseña
+export interface ResetPasswordPayload {
+  token: string;
+  new_password: string;
+}
+
 /**
  * Función para obtener los datos del usuario autenticado
  * Utiliza el token almacenado automáticamente a través de apiClient
@@ -219,6 +225,50 @@ const refreshUserData = async (): Promise<User> => {
 };
 
 /**
+ * Función para solicitar recuperación de contraseña
+ * @param email - Correo electrónico del usuario
+ * @returns Promise con la respuesta del servidor
+ */
+const forgotPassword = async (email: string): Promise<void> => {
+  try {
+    // Realizar petición POST al endpoint /access/forgot-password
+    // El apiClient se encarga de añadir automáticamente el Content-Type: application/json
+    await apiClient("/access/forgot-password", "POST", { body: { email } });
+  } catch (error) {
+    // Re-lanzar cualquier error para que el componente lo maneje
+    throw error;
+  }
+};
+
+/**
+ * Función para restablecer la contraseña con un token
+ * @param token - Token de restablecimiento recibido por email
+ * @param newPassword - Nueva contraseña del usuario
+ * @returns Promise con la respuesta del servidor
+ */
+const resetPassword = async (
+  token: string,
+  newPassword: string
+): Promise<void> => {
+  try {
+    // Crear el payload usando la interfaz ResetPasswordPayload
+    const payload: ResetPasswordPayload = {
+      token,
+      new_password: newPassword,
+    };
+
+    // Realizar petición POST al endpoint /access/reset-password
+    // El apiClient se encarga de añadir automáticamente el Content-Type: application/json
+    await apiClient("/access/reset-password", "POST", {
+      body: payload,
+    });
+  } catch (error) {
+    // Re-lanzar cualquier error para que el componente lo maneje
+    throw error;
+  }
+};
+
+/**
  * Función para cambiar la contraseña del usuario
  * @param payload - Datos con la contraseña actual y nueva
  * @returns Promise con la respuesta del servidor
@@ -257,5 +307,7 @@ export const userService = {
   updateUser,
   createUser,
   refreshUserData,
+  forgotPassword,
+  resetPassword,
   updatePassword,
 };

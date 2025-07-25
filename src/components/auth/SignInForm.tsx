@@ -13,7 +13,7 @@ export default function SignInForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  
+
   const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -24,22 +24,23 @@ export default function SignInForm() {
     try {
       // Usar authService para realizar el login
       const data = await authService.login(email, password);
-      
+
       // Guardar el token de acceso
-      localStorage.setItem('accessToken', data.access_token);
-      
+      localStorage.setItem("accessToken", data.access_token);
+
       // Guardar el objeto de usuario completo como un string JSON
-      localStorage.setItem('user_data', JSON.stringify(data.user));
-      
+      localStorage.setItem("user_data", JSON.stringify(data.user));
+
       // Redirigir al usuario a la página principal
       navigate("/");
-      
     } catch (error) {
       // Manejar diferentes tipos de errores
       if (error instanceof Error) {
         setError(error.message);
       } else {
-        setError("Error en el inicio de sesión. Por favor, intenta nuevamente.");
+        setError(
+          "Error en el inicio de sesión. Por favor, intenta nuevamente."
+        );
       }
     } finally {
       setIsLoading(false);
@@ -131,9 +132,9 @@ export default function SignInForm() {
                   <Label>
                     Email <span className="text-error-500">*</span>{" "}
                   </Label>
-                  <Input 
+                  <Input
                     type="email"
-                    placeholder="info@gmail.com" 
+                    placeholder="info@gmail.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                   />
@@ -169,14 +170,14 @@ export default function SignInForm() {
                     </span>
                   </div>
                   <Link
-                    to="/reset-password"
+                    to="/forgot-password"
                     className="text-sm text-brand-500 hover:text-brand-600 dark:text-brand-400"
                   >
                     Olvidé mi contraseña
                   </Link>
                 </div>
                 <div>
-                  <button 
+                  <button
                     type="submit"
                     className="w-full inline-flex items-center justify-center gap-2 rounded-lg transition px-4 py-3 text-sm bg-brand-500 text-white shadow-theme-xs hover:bg-brand-600 disabled:bg-brand-300 disabled:cursor-not-allowed disabled:opacity-50"
                     disabled={isLoading || !email || !password}
