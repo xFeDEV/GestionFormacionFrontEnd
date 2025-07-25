@@ -9,7 +9,7 @@ export default function ForgotPasswordPage() {
         title="Recuperar Contraseña | Gestión de Formación"
         description="Recupera tu contraseña para acceder al sistema de gestión de formación. Ingresa tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña."
       />
-      <AuthLayout>
+      <AuthLayout className="flex items-center justify-center h-screen">
         <ForgotPasswordForm />
       </AuthLayout>
     </>

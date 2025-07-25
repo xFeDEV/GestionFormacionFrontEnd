@@ -77,100 +77,103 @@ export default function ResetPasswordForm() {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto">
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold text-gray-800 dark:text-white mb-2">
-          Restablecer Contraseña
-        </h1>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          Ingresa tu nueva contraseña para completar el restablecimiento.
-        </p>
-      </div>
-
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Mostrar mensaje de éxito */}
-        {message && (
-          <Alert variant="success" title="¡Éxito!" message={message} />
-        )}
-
-        {/* Mostrar errores */}
-        {error && <Alert variant="error" title="Error" message={error} />}
-
-        {/* Campo Nueva Contraseña */}
-        <div>
-          <Label>
-            Nueva Contraseña <span className="text-error-500">*</span>
-          </Label>
-          <div className="relative">
-            <InputField
-              type={showNewPassword ? "text" : "password"}
-              placeholder="Ingresa tu nueva contraseña"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              disabled={loading}
-            />
-            <button
-              type="button"
-              onClick={() => setShowNewPassword(!showNewPassword)}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-            >
-              {showNewPassword ? (
-                <EyeIcon className="w-5 h-5" />
-              ) : (
-                <EyeCloseIcon className="w-5 h-5" />
-              )}
-            </button>
-          </div>
+    <div className="flex flex-col flex-1">
+      <div className="flex flex-col justify-center flex-1 w-full max-w-md mx-auto">
+        <div className="mb-6">
+          <h1 className="text-2xl font-semibold text-gray-800 dark:text-white mb-2">
+            Restablecer Contraseña
+          </h1>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Ingresa tu nueva contraseña para completar el restablecimiento.
+          </p>
         </div>
 
-        {/* Campo Confirmar Nueva Contraseña */}
-        <div>
-          <Label>
-            Confirmar Nueva Contraseña <span className="text-error-500">*</span>
-          </Label>
-          <div className="relative">
-            <InputField
-              type={showConfirmPassword ? "text" : "password"}
-              placeholder="Confirma tu nueva contraseña"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              disabled={loading}
-            />
-            <button
-              type="button"
-              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-            >
-              {showConfirmPassword ? (
-                <EyeIcon className="w-5 h-5" />
-              ) : (
-                <EyeCloseIcon className="w-5 h-5" />
-              )}
-            </button>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Mostrar mensaje de éxito */}
+          {message && (
+            <Alert variant="success" title="¡Éxito!" message={message} />
+          )}
+
+          {/* Mostrar errores */}
+          {error && <Alert variant="error" title="Error" message={error} />}
+
+          {/* Campo Nueva Contraseña */}
+          <div>
+            <Label>
+              Nueva Contraseña <span className="text-error-500">*</span>
+            </Label>
+            <div className="relative">
+              <InputField
+                type={showNewPassword ? "text" : "password"}
+                placeholder="Ingresa tu nueva contraseña"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                disabled={loading}
+              />
+              <button
+                type="button"
+                onClick={() => setShowNewPassword(!showNewPassword)}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+              >
+                {showNewPassword ? (
+                  <EyeIcon className="w-5 h-5" />
+                ) : (
+                  <EyeCloseIcon className="w-5 h-5" />
+                )}
+              </button>
+            </div>
           </div>
-        </div>
 
-        {/* Botón de envío */}
-        <Button
-          type="submit"
-          disabled={loading || !newPassword || !confirmPassword || !token}
-          className="w-full"
-        >
-          {loading ? "Restableciendo..." : "Restablecer Contraseña"}
-        </Button>
-      </form>
+          {/* Campo Confirmar Nueva Contraseña */}
+          <div>
+            <Label>
+              Confirmar Nueva Contraseña{" "}
+              <span className="text-error-500">*</span>
+            </Label>
+            <div className="relative">
+              <InputField
+                type={showConfirmPassword ? "text" : "password"}
+                placeholder="Confirma tu nueva contraseña"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                disabled={loading}
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+              >
+                {showConfirmPassword ? (
+                  <EyeIcon className="w-5 h-5" />
+                ) : (
+                  <EyeCloseIcon className="w-5 h-5" />
+                )}
+              </button>
+            </div>
+          </div>
 
-      {/* Enlaces adicionales */}
-      <div className="mt-6 text-center">
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          ¿Recordaste tu contraseña?{" "}
-          <button
-            onClick={() => navigate("/signin")}
-            className="text-brand-500 hover:text-brand-600 dark:text-brand-400 font-medium"
+          {/* Botón de envío */}
+          <Button
+            type="submit"
+            disabled={loading || !newPassword || !confirmPassword || !token}
+            className="w-full"
           >
-            Iniciar Sesión
-          </button>
-        </p>
+            {loading ? "Restableciendo..." : "Restablecer Contraseña"}
+          </Button>
+        </form>
+
+        {/* Enlaces adicionales */}
+        <div className="mt-6 text-center">
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            ¿Recordaste tu contraseña?{" "}
+            <button
+              onClick={() => navigate("/signin")}
+              className="text-brand-500 hover:text-brand-600 dark:text-brand-400 font-medium"
+            >
+              Iniciar Sesión
+            </button>
+          </p>
+        </div>
       </div>
     </div>
   );

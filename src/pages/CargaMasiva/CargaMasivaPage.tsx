@@ -1,12 +1,11 @@
-import React, { useState, useCallback } from 'react';
-import { useDropzone } from 'react-dropzone';
-import PageBreadcrumb from '../../components/common/PageBreadCrumb';
-import ComponentCard from '../../components/common/ComponentCard';
-import Alert from '../../components/ui/alert/Alert';
-import Button from '../../components/ui/button/Button';
-import { fileService } from '../../api/file.service';
-import { FileIcon, TrashBinIcon, DownloadIcon } from '../../icons';
-import PageMeta from "../../components/common/PageMeta";
+import React, { useState, useCallback } from "react";
+import { useDropzone } from "react-dropzone";
+import PageBreadcrumb from "../../components/common/PageBreadCrumb";
+import ComponentCard from "../../components/common/ComponentCard";
+import Alert from "../../components/ui/alert/Alert";
+import Button from "../../components/ui/button/Button";
+import { fileService } from "../../api/file.service";
+import { FileIcon, TrashBinIcon, DownloadIcon } from "../../icons";
 
 const CargaMasivaPage: React.FC = () => {
   // Estados para el archivo PE-04
@@ -31,13 +30,19 @@ const CargaMasivaPage: React.FC = () => {
     }
   }, []);
 
-  const { getRootProps: getPe04RootProps, getInputProps: getPe04InputProps, isDragActive: isPe04DragActive } = useDropzone({
+  const {
+    getRootProps: getPe04RootProps,
+    getInputProps: getPe04InputProps,
+    isDragActive: isPe04DragActive,
+  } = useDropzone({
     onDrop: onDropPe04,
     accept: {
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx']
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [
+        ".xlsx",
+      ],
     },
     multiple: false,
-    maxFiles: 1
+    maxFiles: 1,
   });
 
   // Configuración de useDropzone para DF-14
@@ -50,19 +55,25 @@ const CargaMasivaPage: React.FC = () => {
     }
   }, []);
 
-  const { getRootProps: getDf14RootProps, getInputProps: getDf14InputProps, isDragActive: isDf14DragActive } = useDropzone({
+  const {
+    getRootProps: getDf14RootProps,
+    getInputProps: getDf14InputProps,
+    isDragActive: isDf14DragActive,
+  } = useDropzone({
     onDrop: onDropDf14,
     accept: {
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx']
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [
+        ".xlsx",
+      ],
     },
     multiple: false,
-    maxFiles: 1
+    maxFiles: 1,
   });
 
   // Función para manejar la subida del archivo PE-04
   const handlePe04Upload = async () => {
     if (!selectedPe04File) {
-      setPe04Error('Por favor, selecciona un archivo antes de subirlo.');
+      setPe04Error("Por favor, selecciona un archivo antes de subirlo.");
       return;
     }
 
@@ -77,7 +88,7 @@ const CargaMasivaPage: React.FC = () => {
       if (err instanceof Error) {
         setPe04Error(err.message);
       } else {
-        setPe04Error('Ocurrió un error inesperado al subir el archivo.');
+        setPe04Error("Ocurrió un error inesperado al subir el archivo.");
       }
     } finally {
       setIsPe04Loading(false);
@@ -87,7 +98,7 @@ const CargaMasivaPage: React.FC = () => {
   // Función para manejar la subida del archivo DF-14
   const handleDf14Upload = async () => {
     if (!selectedDf14File) {
-      setDf14Error('Por favor, selecciona un archivo antes de subirlo.');
+      setDf14Error("Por favor, selecciona un archivo antes de subirlo.");
       return;
     }
 
@@ -102,7 +113,7 @@ const CargaMasivaPage: React.FC = () => {
       if (err instanceof Error) {
         setDf14Error(err.message);
       } else {
-        setDf14Error('Ocurrió un error inesperado al subir el archivo.');
+        setDf14Error("Ocurrió un error inesperado al subir el archivo.");
       }
     } finally {
       setIsDf14Loading(false);
@@ -125,25 +136,21 @@ const CargaMasivaPage: React.FC = () => {
 
   return (
     <>
-      <PageMeta
-                title="Gestion Formacion | SENA"
-                description="Gestion de carga masiva"
-            />
       <PageBreadcrumb pageTitle="Carga Masiva de Datos" />
-      
+
       {/* Tarjeta para PE-04 */}
-      <ComponentCard 
-        title="Carga de Programas y Grupos (PE-04)" 
+      <ComponentCard
+        title="Carga de Programas y Grupos (PE-04)"
         desc="Selecciona el archivo PE-04.xlsx para cargar los datos de programas y grupos de formación"
       >
         <div className="space-y-6">
           {/* Zona de dropzone para PE-04 */}
-          <div 
-            {...getPe04RootProps()} 
+          <div
+            {...getPe04RootProps()}
             className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
-              isPe04DragActive 
-                ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' 
-                : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500'
+              isPe04DragActive
+                ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+                : "border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500"
             }`}
           >
             <input {...getPe04InputProps()} />
@@ -156,7 +163,8 @@ const CargaMasivaPage: React.FC = () => {
               ) : (
                 <div className="space-y-2">
                   <p className="text-lg text-gray-600 dark:text-gray-300">
-                    Arrastra y suelta el archivo <strong>PE-04.xlsx</strong> aquí
+                    Arrastra y suelta el archivo <strong>PE-04.xlsx</strong>{" "}
+                    aquí
                   </p>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
                     o haz clic para seleccionar el archivo
@@ -250,29 +258,31 @@ const CargaMasivaPage: React.FC = () => {
           )}
 
           {/* Errores para PE-04 */}
-          {pe04Response && pe04Response.errores && pe04Response.errores.length > 0 && (
-            <Alert
-              variant="error"
-              title="Errores encontrados en PE-04"
-              message={pe04Response.errores.join('\n• ')}
-            />
-          )}
+          {pe04Response &&
+            pe04Response.errores &&
+            pe04Response.errores.length > 0 && (
+              <Alert
+                variant="error"
+                title="Errores encontrados en PE-04"
+                message={pe04Response.errores.join("\n• ")}
+              />
+            )}
         </div>
       </ComponentCard>
 
       {/* Tarjeta para DF-14 */}
-      <ComponentCard 
-        title="Carga de Duraciones y Novedades (DF-14)" 
+      <ComponentCard
+        title="Carga de Duraciones y Novedades (DF-14)"
         desc="Selecciona el archivo DF-14.xlsx para cargar los datos de duraciones y novedades de formación"
       >
         <div className="space-y-6">
           {/* Zona de dropzone para DF-14 */}
-          <div 
-            {...getDf14RootProps()} 
+          <div
+            {...getDf14RootProps()}
             className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
-              isDf14DragActive 
-                ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' 
-                : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500'
+              isDf14DragActive
+                ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+                : "border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500"
             }`}
           >
             <input {...getDf14InputProps()} />
@@ -285,7 +295,8 @@ const CargaMasivaPage: React.FC = () => {
               ) : (
                 <div className="space-y-2">
                   <p className="text-lg text-gray-600 dark:text-gray-300">
-                    Arrastra y suelta el archivo <strong>DF-14.xlsx</strong> aquí
+                    Arrastra y suelta el archivo <strong>DF-14.xlsx</strong>{" "}
+                    aquí
                   </p>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
                     o haz clic para seleccionar el archivo
@@ -376,17 +387,19 @@ const CargaMasivaPage: React.FC = () => {
           )}
 
           {/* Errores para DF-14 */}
-          {df14Response && df14Response.errores && df14Response.errores.length > 0 && (
-            <Alert
-              variant="error"
-              title="Errores encontrados en DF-14"
-              message={df14Response.errores.join('\n• ')}
-            />
-          )}
+          {df14Response &&
+            df14Response.errores &&
+            df14Response.errores.length > 0 && (
+              <Alert
+                variant="error"
+                title="Errores encontrados en DF-14"
+                message={df14Response.errores.join("\n• ")}
+              />
+            )}
         </div>
       </ComponentCard>
     </>
   );
 };
 
-export default CargaMasivaPage; 
+export default CargaMasivaPage;

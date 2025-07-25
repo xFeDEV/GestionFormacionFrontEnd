@@ -418,3 +418,6 @@ const AppSidebar: React.FC = () => {
 };
 
 export default AppSidebar;
+
+// Exportar los arrays de navegación para uso en otros componentes
+export { navItems, othersItems };
