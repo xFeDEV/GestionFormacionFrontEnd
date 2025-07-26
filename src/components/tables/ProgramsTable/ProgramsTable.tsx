@@ -9,8 +9,13 @@ import Button from "../../ui/button/Button";
 import CreateProgramModal from "../../modals/CreateProgramModal";
 import EditProgramModal from "../../modals/EditProgramModal";
 import useMediaQuery from "../../../hooks/useMediaQuery";
+import useAuth from "../../../hooks/useAuth";
 
 const ProgramsTable: React.FC = () => {
+  // --- AUTENTICACIÓN Y AUTORIZACIÓN ---
+  const currentUser = useAuth();
+  const allowedRoles = [1, 2]; // 1: superadmin, 2: admin
+
   // --- ESTADO DEL COMPONENTE ---
   const [programs, setPrograms] = useState<Program[]>([]);
   const [loading, setLoading] = useState(true);
@@ -165,24 +170,26 @@ const ProgramsTable: React.FC = () => {
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
           />
         </div>
-        <button
-          onClick={() => setIsCreateModalOpen(true)}
-          className="w-full sm:w-auto px-4 py-2 bg-[#39A900] text-white rounded-md hover:bg-[#2d8000] transition-colors flex items-center justify-center gap-2 whitespace-nowrap"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5"
-            viewBox="0 0 20 20"
-            fill="currentColor"
+        {currentUser && allowedRoles.includes(currentUser.id_rol) && (
+          <button
+            onClick={() => setIsCreateModalOpen(true)}
+            className="w-full sm:w-auto px-4 py-2 bg-[#39A900] text-white rounded-md hover:bg-[#2d8000] transition-colors flex items-center justify-center gap-2 whitespace-nowrap"
           >
-            <path
-              fillRule="evenodd"
-              d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
-              clipRule="evenodd"
-            />
-          </svg>
-          Crear Programa
-        </button>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                clipRule="evenodd"
+              />
+            </svg>
+            Crear Programa
+          </button>
+        )}
       </div>
 
       {error && <div className="text-red-500 text-center mb-4">{error}</div>}
@@ -208,15 +215,24 @@ const ProgramsTable: React.FC = () => {
                 <th className="px-5 py-3 font-medium text-gray-500 text-left text-theme-xs dark:text-gray-400">
                   Horas Productivas
                 </th>
-                <th className="px-5 py-3 font-medium text-gray-500 text-left text-theme-xs dark:text-gray-400">
-                  Acciones
-                </th>
+                {currentUser && allowedRoles.includes(currentUser.id_rol) && (
+                  <th className="px-5 py-3 font-medium text-gray-500 text-left text-theme-xs dark:text-gray-400">
+                    Acciones
+                  </th>
+                )}
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="text-center py-10">
+                  <td
+                    colSpan={
+                      currentUser && allowedRoles.includes(currentUser.id_rol)
+                        ? 6
+                        : 5
+                    }
+                    className="text-center py-10"
+                  >
                     <div className="flex items-center justify-center space-x-3">
                       <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#39A900]"></div>
                       <span className="text-gray-500 dark:text-gray-400">
@@ -227,7 +243,14 @@ const ProgramsTable: React.FC = () => {
                 </tr>
               ) : programasPaginados.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="text-center py-10 text-gray-500">
+                  <td
+                    colSpan={
+                      currentUser && allowedRoles.includes(currentUser.id_rol)
+                        ? 6
+                        : 5
+                    }
+                    className="text-center py-10 text-gray-500"
+                  >
                     No se encontraron programas.
                   </td>
                 </tr>
@@ -249,29 +272,32 @@ const ProgramsTable: React.FC = () => {
                     <td className="px-5 py-4 text-gray-500 dark:text-gray-400">
                       {program.horas_productivas}
                     </td>
-                    <td className="px-5 py-4">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleEditClick(program)}
-                        className="px-3 py-1 text-xs"
-                      >
-                        <svg
-                          className="w-4 h-4 mr-1"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                          />
-                        </svg>
-                        Editar
-                      </Button>
-                    </td>
+                    {currentUser &&
+                      allowedRoles.includes(currentUser.id_rol) && (
+                        <td className="px-5 py-4">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEditClick(program)}
+                            className="px-3 py-1 text-xs"
+                          >
+                            <svg
+                              className="w-4 h-4 mr-1"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                              />
+                            </svg>
+                            Editar
+                          </Button>
+                        </td>
+                      )}
                   </tr>
                 ))
               )}
@@ -299,9 +325,7 @@ const ProgramsTable: React.FC = () => {
                   )}
                 </span>{" "}
                 de{" "}
-                <span className="font-medium">
-                  {programasFiltrados.length}
-                </span>{" "}
+                <span className="font-medium">{programasFiltrados.length}</span>{" "}
                 resultados
               </p>
             </div>
