@@ -1,6 +1,6 @@
 // Configuración base de la API
-const baseURL = "https://api.gestionformacion.tech";
-//const baseURL = "http://localhost:8000";
+//const baseURL = "https://api.gestionformacion.tech";
+const baseURL = "http://localhost:8000";
 
 // Tipos para mayor robustez
 interface ApiClientOptions {

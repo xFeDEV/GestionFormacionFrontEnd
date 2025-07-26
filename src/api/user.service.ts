@@ -299,6 +299,33 @@ const updatePassword = async (
   }
 };
 
+/**
+ * Función para obtener la lista de instructores
+ * @returns Promise con la lista de usuarios que son instructores
+ */
+const getInstructores = async (): Promise<User[]> => {
+  try {
+    const endpoint = "/users/instructores";
+    const instructoresData = await apiClient(endpoint, "GET");
+    return instructoresData;
+  } catch (error) {
+    // Manejar errores específicos de autorización
+    if (
+      error instanceof Error &&
+      "status" in error &&
+      (error as any).status === 401
+    ) {
+      // Token expirado o inválido, limpiar localStorage
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("user_data");
+      throw new Error("Sesión expirada. Por favor, inicia sesión nuevamente.");
+    }
+
+    console.error("Error al obtener la lista de instructores:", error);
+    throw error;
+  }
+};
+
 // Exportar las funciones como un objeto userService
 export const userService = {
   getMe,
@@ -310,4 +337,5 @@ export const userService = {
   forgotPassword,
   resetPassword,
   updatePassword,
+  getInstructores,
 };

@@ -80,9 +80,27 @@ const updateGrupo = async (cod_ficha: number, payload: UpdateGrupoPayload): Prom
   }
 };
 
+/**
+ * Función para buscar grupos por texto de búsqueda
+ * @param query - Texto de búsqueda para filtrar los grupos
+ * @param limit - Número máximo de resultados (opcional, por defecto 20)
+ * @returns Promise con la lista de grupos que coinciden con la búsqueda
+ */
+const searchGrupos = async (query: string, limit: number = 20): Promise<Grupo[]> => {
+  try {
+    const endpoint = `/grupos/search?search=${encodeURIComponent(query)}&limit=${limit}`;
+    const gruposData = await apiClient(endpoint, 'GET');
+    return gruposData;
+  } catch (error) {
+    console.error(`Error al buscar grupos con query "${query}":`, error);
+    throw error;
+  }
+};
+
 // Exportar las funciones como un objeto grupoService
 export const grupoService = {
   getGruposByCentro,
   getGrupoByFicha,
   updateGrupo,
+  searchGrupos,
 };
