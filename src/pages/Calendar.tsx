@@ -129,7 +129,7 @@ const Calendar: React.FC = () => {
           );
           const competenciaOptions = competenciasData.map((competencia) => ({
             value: competencia.cod_competencia,
-            label: competencia.nombre_competencia,
+            label: competencia.nombre,
           }));
           setCompetencias(competenciaOptions);
         } catch (error) {
@@ -155,7 +155,7 @@ const Calendar: React.FC = () => {
           const resultadosData = await programacionService.getResultadosPorCompetencia(selectedCompetencia.value);
           const resultadoOptions = resultadosData.map((resultado) => ({
             value: resultado.cod_resultado,
-            label: resultado.nombre_resultado,
+            label: resultado.nombre,
           }));
           setResultados(resultadoOptions);
         } catch (error) {

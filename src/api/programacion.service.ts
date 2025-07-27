@@ -20,16 +20,16 @@ export interface Programacion {
 
 export interface Competencia {
   cod_competencia: number;
-  nombre_competencia: string;
-  cod_programa: number;
-  version: number;
+  nombre: string;
+  horas: number;
   [key: string]: any;
 }
 
 export interface ResultadoAprendizaje {
   cod_resultado: number;
-  nombre_resultado: string;
+  nombre: string;
   cod_competencia: number;
+  horas?: number;
   [key: string]: any;
 }
 
@@ -95,7 +95,7 @@ const getProgramacionDetalle = async (idProgramacion: number): Promise<Programac
  */
 const getCompetenciasPorPrograma = async (codPrograma: number, version: number): Promise<Competencia[]> => {
   try {
-    const endpoint = `/programacion/competencias/${codPrograma}/${version}`;
+    const endpoint = `/competencias/programa/${codPrograma}/${version}`;
     const competenciasData = await apiClient(endpoint, "GET");
     return competenciasData;
   } catch (error) {
@@ -111,7 +111,7 @@ const getCompetenciasPorPrograma = async (codPrograma: number, version: number):
  */
 const getResultadosPorCompetencia = async (codCompetencia: number): Promise<ResultadoAprendizaje[]> => {
   try {
-    const endpoint = `/programacion/resultados/${codCompetencia}`;
+    const endpoint = `/resultados/competencia/${codCompetencia}`;
     const resultadosData = await apiClient(endpoint, "GET");
     return resultadosData;
   } catch (error) {
