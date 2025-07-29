@@ -105,22 +105,45 @@ export const notificacionService = {
    * @returns string Tiempo transcurrido en formato legible
    */
   formatearTiempoTranscurrido: (fechaCreacion: string): string => {
-    const ahora = new Date();
-    const fechaNotificacion = new Date(fechaCreacion);
-    const diferencia = ahora.getTime() - fechaNotificacion.getTime();
+    // Validar que fechaCreacion sea válida
+    if (!fechaCreacion || typeof fechaCreacion !== 'string') {
+      console.warn("⚠️ [DEBUG] Fecha de creación inválida:", fechaCreacion);
+      return 'Fecha inválida';
+    }
 
-    const minutos = Math.floor(diferencia / (1000 * 60));
-    const horas = Math.floor(diferencia / (1000 * 60 * 60));
-    const dias = Math.floor(diferencia / (1000 * 60 * 60 * 24));
+    try {
+      const ahora = new Date();
+      const fechaNotificacion = new Date(fechaCreacion);
+      
+      // Verificar que la fecha sea válida
+      if (isNaN(fechaNotificacion.getTime())) {
+        console.warn("⚠️ [DEBUG] Fecha de notificación no válida:", fechaCreacion);
+        return 'Fecha inválida';
+      }
 
-    if (minutos < 1) {
-      return 'Ahora';
-    } else if (minutos < 60) {
-      return `${minutos} min ago`;
-    } else if (horas < 24) {
-      return `${horas} hr ago`;
-    } else {
-      return `${dias} día${dias > 1 ? 's' : ''} ago`;
+      const diferencia = ahora.getTime() - fechaNotificacion.getTime();
+
+      // Si la diferencia es negativa (fecha futura), mostrar "Ahora"
+      if (diferencia < 0) {
+        return 'Ahora';
+      }
+
+      const minutos = Math.floor(diferencia / (1000 * 60));
+      const horas = Math.floor(diferencia / (1000 * 60 * 60));
+      const dias = Math.floor(diferencia / (1000 * 60 * 60 * 24));
+
+      if (minutos < 1) {
+        return 'Ahora';
+      } else if (minutos < 60) {
+        return `${minutos} min ago`;
+      } else if (horas < 24) {
+        return `${horas} hr ago`;
+      } else {
+        return `${dias} día${dias > 1 ? 's' : ''} ago`;
+      }
+    } catch (error) {
+      console.error("❌ [DEBUG] Error al formatear tiempo transcurrido:", error);
+      return 'Fecha inválida';
     }
   },
 
@@ -130,6 +153,12 @@ export const notificacionService = {
    * @returns string Emoji o ícono para el tipo
    */
   getIconoPorTipo: (tipo: string): string => {
+    // Validar que tipo no sea undefined, null o vacío
+    if (!tipo || typeof tipo !== 'string') {
+      console.warn("⚠️ [DEBUG] Tipo de notificación inválido:", tipo);
+      return '🔔'; // Ícono por defecto
+    }
+
     const iconos: Record<string, string> = {
       'info': 'ℹ️',
       'success': '✅',

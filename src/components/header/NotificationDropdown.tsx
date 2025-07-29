@@ -146,62 +146,70 @@ export default function NotificationDropdown() {
             </li>
           )}
           
-          {!loading && !error && notificaciones.map((notificacion) => (
-            <li key={notificacion.id_notificacion}>
-              <DropdownItem
-                onItemClick={() => handleNotificationClick(notificacion)}
-                className={`flex gap-3 rounded-lg border-b border-gray-100 p-3 px-4.5 py-3 hover:bg-gray-100 dark:border-gray-800 dark:hover:bg-white/5 cursor-pointer transition-colors ${
-                  !notificacion.leida 
-                    ? 'bg-blue-50 dark:bg-blue-900/10 border-l-4 border-l-blue-500' 
-                    : ''
-                }`}
-              >
-                {/* Ícono de la notificación */}
-                <span className="relative block w-full h-10 rounded-full z-1 max-w-10 flex items-center justify-center bg-gray-100 dark:bg-gray-800">
-                  <span className="text-lg">
-                    {notificacionService.getIconoPorTipo(notificacion.tipo)}
-                  </span>
-                  {!notificacion.leida && (
-                    <span className="absolute -top-1 -right-1 h-3 w-3 bg-orange-500 rounded-full border-2 border-white dark:border-gray-900"></span>
-                  )}
-                </span>
+          {!loading && !error && notificaciones.map((notificacion) => {
+            // Validar que la notificación tenga datos completos
+            if (!notificacion || !notificacion.id_notificacion) {
+              console.warn("⚠️ [NotificationDropdown] Notificación con datos incompletos:", notificacion);
+              return null;
+            }
 
-                {/* Contenido de la notificación */}
-                <span className="block flex-1">
-                  <span className={`mb-1.5 block text-theme-sm space-x-1 ${
+            return (
+              <li key={notificacion.id_notificacion}>
+                <DropdownItem
+                  onItemClick={() => handleNotificationClick(notificacion)}
+                  className={`flex gap-3 rounded-lg border-b border-gray-100 p-3 px-4.5 py-3 hover:bg-gray-100 dark:border-gray-800 dark:hover:bg-white/5 cursor-pointer transition-colors ${
                     !notificacion.leida 
-                      ? 'text-gray-900 dark:text-white' 
-                      : 'text-gray-500 dark:text-gray-400'
-                  }`}>
-                    <span className={`font-medium ${
+                      ? 'bg-blue-50 dark:bg-blue-900/10 border-l-4 border-l-blue-500' 
+                      : ''
+                  }`}
+                >
+                  {/* Ícono de la notificación */}
+                  <span className="relative block w-full h-10 rounded-full z-1 max-w-10 flex items-center justify-center bg-gray-100 dark:bg-gray-800">
+                    <span className="text-lg">
+                      {notificacionService.getIconoPorTipo(notificacion.tipo || 'default')}
+                    </span>
+                    {!notificacion.leida && (
+                      <span className="absolute -top-1 -right-1 h-3 w-3 bg-orange-500 rounded-full border-2 border-white dark:border-gray-900"></span>
+                    )}
+                  </span>
+
+                  {/* Contenido de la notificación */}
+                  <span className="block flex-1">
+                    <span className={`mb-1.5 block text-theme-sm space-x-1 ${
                       !notificacion.leida 
                         ? 'text-gray-900 dark:text-white' 
-                        : 'text-gray-800 dark:text-white/90'
+                        : 'text-gray-500 dark:text-gray-400'
                     }`}>
-                      {notificacion.titulo}
-                    </span>
-                    {notificacion.mensaje && (
-                      <span className="block mt-1 text-sm">
-                        {notificacion.mensaje}
+                      <span className={`font-medium ${
+                        !notificacion.leida 
+                          ? 'text-gray-900 dark:text-white' 
+                          : 'text-gray-800 dark:text-white/90'
+                      }`}>
+                        {notificacion.titulo || 'Sin título'}
                       </span>
-                    )}
-                  </span>
+                      {notificacion.mensaje && (
+                        <span className="block mt-1 text-sm">
+                          {notificacion.mensaje}
+                        </span>
+                      )}
+                    </span>
 
-                  <span className="flex items-center gap-2 text-gray-500 text-theme-xs dark:text-gray-400">
-                    <span className="capitalize">{notificacion.tipo}</span>
-                    <span className="w-1 h-1 bg-gray-400 rounded-full"></span>
-                    <span>{notificacionService.formatearTiempoTranscurrido(notificacion.fecha_creacion)}</span>
-                    {!notificacion.leida && (
-                      <>
-                        <span className="w-1 h-1 bg-gray-400 rounded-full"></span>
-                        <span className="text-blue-500 dark:text-blue-400 font-medium">No leída</span>
-                      </>
-                    )}
+                    <span className="flex items-center gap-2 text-gray-500 text-theme-xs dark:text-gray-400">
+                      <span className="capitalize">{notificacion.tipo || 'general'}</span>
+                      <span className="w-1 h-1 bg-gray-400 rounded-full"></span>
+                      <span>{notificacionService.formatearTiempoTranscurrido(notificacion.fecha_creacion || new Date().toISOString())}</span>
+                      {!notificacion.leida && (
+                        <>
+                          <span className="w-1 h-1 bg-gray-400 rounded-full"></span>
+                          <span className="text-blue-500 dark:text-blue-400 font-medium">No leída</span>
+                        </>
+                      )}
+                    </span>
                   </span>
-                </span>
-              </DropdownItem>
-            </li>
-          ))}
+                </DropdownItem>
+              </li>
+            );
+          }).filter(Boolean)}
         </ul>
         
         {/* Footer con link para ver todas las notificaciones */}

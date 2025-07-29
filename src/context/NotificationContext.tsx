@@ -130,11 +130,11 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
     // Cargar notificaciones inmediatamente
     fetchNotificaciones();
 
-    // Configurar polling cada minuto para actualizaciones en tiempo real
+    // Configurar polling cada 5 segundos para actualizaciones en tiempo real
     const intervalId = setInterval(() => {
       console.log("⏰ [NotificationContext] Polling automático - actualizando notificaciones...");
       fetchNotificaciones();
-    }, 60000); // 60 segundos
+    }, 5000); // 5 segundos
 
     // Cleanup function para limpiar el interval
     return () => {
