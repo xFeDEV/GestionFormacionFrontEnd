@@ -168,9 +168,26 @@ const eliminarProgramacion = async (idProgramacion: number): Promise<void> => {
   }
 };
 
+/**
+ * Función para obtener las programaciones por ID de instructor
+ * @param idInstructor - ID del instructor para filtrar las programaciones
+ * @returns Promise con la lista de programaciones del instructor
+ */
+const getProgramacionesPorInstructor = async (idInstructor: number): Promise<Programacion[]> => {
+  try {
+    const endpoint = `/programacion/instructor/${idInstructor}`;
+    const programacionesData = await apiClient(endpoint, "GET");
+    return programacionesData;
+  } catch (error) {
+    console.error(`Error al obtener programaciones para el instructor ${idInstructor}:`, error);
+    throw error;
+  }
+};
+
 // Exportar las funciones como un objeto programacionService
 export const programacionService = {
   getProgramacionesPorFicha,
+  getProgramacionesPorInstructor,
   getProgramacionDetalle,
   getCompetenciasPorPrograma,
   getResultadosPorCompetencia,

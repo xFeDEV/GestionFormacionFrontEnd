@@ -1,0 +1,116 @@
+/* Estilos para días no laborables en el calendario */
+
+/* Días deshabilitados (festivos y domingos) */
+.fc-day-disabled {
+  background-color: #f3f4f6 !important;
+  opacity: 0.6 !important;
+  cursor: not-allowed !important;
+  position: relative;
+}
+
+.fc-day-disabled::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 2px,
+    rgba(156, 163, 175, 0.3) 2px,
+    rgba(156, 163, 175, 0.3) 4px
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Días festivos específicos */
+.fc-day-festivo {
+  background-color: #fef3c7 !important;
+  border-color: #f59e0b !important;
+}
+
+.fc-day-festivo::before {
+  background: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 2px,
+    rgba(245, 158, 11, 0.3) 2px,
+    rgba(245, 158, 11, 0.3) 4px
+  );
+}
+
+.fc-day-festivo::after {
+  content: '🎉';
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  font-size: 12px;
+  z-index: 2;
+}
+
+/* Domingos específicos */
+.fc-day-domingo {
+  background-color: #fee2e2 !important;
+  border-color: #ef4444 !important;
+}
+
+.fc-day-domingo::before {
+  background: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 2px,
+    rgba(239, 68, 68, 0.3) 2px,
+    rgba(239, 68, 68, 0.3) 4px
+  );
+}
+
+.fc-day-domingo::after {
+  content: '🔒';
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  font-size: 12px;
+  z-index: 2;
+}
+
+/* Evitar selección en días deshabilitados */
+.fc-day-disabled .fc-daygrid-day-top,
+.fc-day-disabled .fc-daygrid-day-number {
+  color: #9ca3af !important;
+  text-decoration: line-through;
+}
+
+/* Hover states para días deshabilitados */
+.fc-day-disabled:hover {
+  background-color: #f3f4f6 !important;
+  cursor: not-allowed !important;
+}
+
+/* Asegurar que los eventos en días deshabilitados sean visibles */
+.fc-day-disabled .fc-event {
+  z-index: 3;
+  opacity: 1 !important;
+}
+
+/* Dark mode support */
+.dark .fc-day-disabled {
+  background-color: #374151 !important;
+}
+
+.dark .fc-day-festivo {
+  background-color: #451a03 !important;
+  border-color: #92400e !important;
+}
+
+.dark .fc-day-domingo {
+  background-color: #450a0a !important;
+  border-color: #dc2626 !important;
+}
+
+.dark .fc-day-disabled .fc-daygrid-day-top,
+.dark .fc-day-disabled .fc-daygrid-day-number {
+  color: #6b7280 !important;
+}

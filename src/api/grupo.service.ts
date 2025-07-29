@@ -20,6 +20,7 @@ export interface Grupo {
   hora_inicio?: string; // Las horas se manejarán como string
   hora_fin?: string;
   id_ambiente?: number | null;
+  nombre_programa?: string;
   [key: string]: any;
 }
 
@@ -28,6 +29,12 @@ export interface UpdateGrupoPayload {
   hora_inicio?: string;
   hora_fin?: string;
   id_ambiente?: number | null;
+}
+
+// Interfaz para la relación grupo-instructor
+export interface GrupoInstructor {
+  cod_ficha: number;
+  id_instructor: number;
 }
 
 /**
@@ -97,10 +104,68 @@ const searchGrupos = async (query: string, limit: number = 20): Promise<Grupo[]>
   }
 };
 
+/**
+ * Función para obtener las fichas asignadas a un instructor
+ * @param idInstructor - ID del instructor
+ * @returns Promise con la lista de grupos asignados al instructor
+ */
+const getGruposPorInstructor = async (idInstructor: number): Promise<Grupo[]> => {
+  try {
+    // Primero obtener las relaciones grupo-instructor
+    const endpoint = `/grupo-instructor/instructor/${idInstructor}`;
+    const relaciones: GrupoInstructor[] = await apiClient(endpoint, 'GET');
+    
+    console.log("📊 [DEBUG] Relaciones grupo-instructor recibidas:", relaciones);
+    
+    if (!relaciones || relaciones.length === 0) {
+      console.log("❌ [DEBUG] No se encontraron fichas para el instructor");
+      return [];
+    }
+    
+    // Obtener la información completa de cada grupo
+    const gruposCompletos: Grupo[] = [];
+    
+    for (const relacion of relaciones) {
+      try {
+        const grupoCompleto = await getGrupoByFicha(relacion.cod_ficha);
+        gruposCompletos.push(grupoCompleto);
+      } catch (error) {
+        console.error(`❌ [ERROR] Error al obtener grupo ${relacion.cod_ficha}:`, error);
+        // Continuar con el siguiente grupo en caso de error
+      }
+    }
+    
+    console.log("🎯 [DEBUG] Grupos completos obtenidos:", gruposCompletos);
+    return gruposCompletos;
+    
+  } catch (error) {
+    console.error(`Error al obtener grupos para el instructor ${idInstructor}:`, error);
+    throw error;
+  }
+};
+
+/**
+ * Función para asignar un instructor a una ficha
+ * @param payload - Datos de la asignación (cod_ficha, id_instructor)
+ * @returns Promise con la respuesta del servidor
+ */
+const asignarInstructorAFicha = async (payload: GrupoInstructor): Promise<GrupoInstructor> => {
+  try {
+    const endpoint = '/grupo-instructor/';
+    const response = await apiClient(endpoint, 'POST', { body: payload });
+    return response;
+  } catch (error) {
+    console.error('Error al asignar instructor a ficha:', error);
+    throw error;
+  }
+};
+
 // Exportar las funciones como un objeto grupoService
 export const grupoService = {
   getGruposByCentro,
   getGrupoByFicha,
   updateGrupo,
   searchGrupos,
+  getGruposPorInstructor,
+  asignarInstructorAFicha,
 };
