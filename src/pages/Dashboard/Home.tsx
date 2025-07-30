@@ -3,8 +3,15 @@ import MonthlySalesChart from "../../components/ecommerce/MonthlySalesChart";
 import StatisticsChart from "../../components/ecommerce/StatisticsChart";
 import DemographicCard from "../../components/ecommerce/DemographicCard";
 import ModalityChart from "../../components/groupGraph/Modality";
+import { DashboardFilters } from "../../api/grupo.service";
 
 export default function Home() {
+  // Filtros para el dashboard
+  const filters: DashboardFilters = {
+    estado_grupo: "En ejecucion",
+    año: 2025,
+  };
+
   return (
     <>
       <div className="grid grid-cols-12 gap-4 md:gap-6">
@@ -15,7 +22,7 @@ export default function Home() {
         </div>
 
         <div className="col-span-12 xl:col-span-5">
-          <ModalityChart />
+          <ModalityChart filters={filters} />
         </div>
 
         <div className="col-span-12">
@@ -27,7 +34,7 @@ export default function Home() {
         </div>
 
         <div className="col-span-12 xl:col-span-7">
-          <ModalityChart />
+          <ModalityChart filters={filters} />
         </div>
       </div>
     </>

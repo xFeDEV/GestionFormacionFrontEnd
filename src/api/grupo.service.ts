@@ -229,7 +229,7 @@ const buildDashboardQueryParams = (filters: DashboardFilters): string => {
 const getDashboardKPIs = async (filters: DashboardFilters): Promise<DashboardKPI> => {
   try {
     const queryParams = buildDashboardQueryParams(filters);
-    const endpoint = `/dashboard/kpis?${queryParams}`;
+    const endpoint = `/grupos/kpis?${queryParams}`;
     return await apiClient(endpoint, 'GET');
   } catch (error) {
     console.error('Error al obtener los KPIs del dashboard:', error);
@@ -240,7 +240,7 @@ const getDashboardKPIs = async (filters: DashboardFilters): Promise<DashboardKPI
 const getDistribucionPorMunicipio = async (filters: DashboardFilters): Promise<DistribucionMunicipio[]> => {
   try {
     const queryParams = buildDashboardQueryParams(filters);
-    const endpoint = `/dashboard/distribucion/por-municipio?${queryParams}`;
+    const endpoint = `/grupos/distribucion/por-municipio?${queryParams}`;
     return await apiClient(endpoint, 'GET');
   } catch (error) {
     console.error('Error al obtener la distribución por municipio:', error);
@@ -251,7 +251,7 @@ const getDistribucionPorMunicipio = async (filters: DashboardFilters): Promise<D
 const getDistribucionPorJornada = async (filters: DashboardFilters): Promise<DistribucionJornada[]> => {
   try {
     const queryParams = buildDashboardQueryParams(filters);
-    const endpoint = `/dashboard/distribucion/por-jornada?${queryParams}`;
+    const endpoint = `/grupos/distribucion/por-jornada?${queryParams}`;
     return await apiClient(endpoint, 'GET');
   } catch (error) {
     console.error('Error al obtener la distribución por jornada:', error);
@@ -262,7 +262,7 @@ const getDistribucionPorJornada = async (filters: DashboardFilters): Promise<Dis
 const getDistribucionPorModalidad = async (filters: DashboardFilters): Promise<DistribucionModalidad[]> => {
   try {
     const queryParams = buildDashboardQueryParams(filters);
-    const endpoint = `/dashboard/distribucion/por-modalidad?${queryParams}`;
+    const endpoint = `/grupos/distribucion/por-modalidad?${queryParams}`;
     return await apiClient(endpoint, 'GET');
   } catch (error) {
     console.error('Error al obtener la distribución por modalidad:', error);
@@ -273,7 +273,7 @@ const getDistribucionPorModalidad = async (filters: DashboardFilters): Promise<D
 const getDistribucionPorEtapa = async (filters: DashboardFilters): Promise<DistribucionEtapa[]> => {
   try {
     const queryParams = buildDashboardQueryParams(filters);
-    const endpoint = `/dashboard/distribucion/por-etapa?${queryParams}`;
+    const endpoint = `/grupos/distribucion/por-etapa?${queryParams}`;
     return await apiClient(endpoint, 'GET');
   } catch (error) {
     console.error('Error al obtener la distribución por etapa:', error);
@@ -284,7 +284,7 @@ const getDistribucionPorEtapa = async (filters: DashboardFilters): Promise<Distr
 const getDistribucionPorNivel = async (filters: DashboardFilters): Promise<DistribucionNivel[]> => {
   try {
     const queryParams = buildDashboardQueryParams(filters);
-    const endpoint = `/dashboard/distribucion/por-nivel?${queryParams}`;
+    const endpoint = `/grupos/distribucion/por-nivel?${queryParams}`;
     return await apiClient(endpoint, 'GET');
   } catch (error) {
     console.error('Error al obtener la distribución por nivel:', error);
