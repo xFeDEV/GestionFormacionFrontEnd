@@ -25,7 +25,6 @@ export default function ModalityChart({ filters }: ModalityChartProps) {
     const fetchData = async () => {
       // Debug: Verificar valores
       console.log('Filters:', filters);
-      console.log('cod_centro from localStorage:', localStorage.getItem('cod_centro'));
       
       // Validar que los filtros obligatorios existan
       if (!filters.estado_grupo) { 

@@ -213,10 +213,17 @@ const asignarInstructorAFicha = async (payload: GrupoInstructor): Promise<GrupoI
 const buildDashboardQueryParams = (filters: DashboardFilters): string => {
   const params = new URLSearchParams();
   
-  // Obtener cod_centro del localStorage
-  const codCentro = localStorage.getItem('cod_centro');
-  if (codCentro) {
-    params.append('cod_centro', codCentro);
+  // Obtener cod_centro del localStorage desde user_data
+  const userData = localStorage.getItem('user_data');
+  if (userData) {
+    try {
+      const user = JSON.parse(userData);
+      if (user?.cod_centro) {
+        params.append('cod_centro', user.cod_centro.toString());
+      }
+    } catch (error) {
+      console.error('Error parsing user_data from localStorage:', error);
+    }
   }
   
   params.append('estado_grupo', filters.estado_grupo);
