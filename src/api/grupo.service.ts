@@ -37,6 +37,49 @@ export interface GrupoInstructor {
   id_instructor: number;
 }
 
+// --- Interfaces para el Dashboard ---
+
+// Define los filtros que usarán los endpoints del dashboard
+export interface DashboardFilters {
+  estado_grupo: string;
+  año?: number; // El año es opcional
+}
+
+// Coincide con DashboardKPISchema
+export interface DashboardKPI {
+  total_grupo: number;
+}
+
+// Coincide con GruposPorMunicipioSchema
+export interface DistribucionMunicipio {
+  municipio: string;
+  cantidad: number;
+}
+
+// Coincide con GruposPorJornadaSchema
+export interface DistribucionJornada {
+  jornada: string;
+  cantidad: number;
+}
+
+// Coincide con GruposPorModalidadSchema
+export interface DistribucionModalidad {
+  modalidad: string;
+  cantidad: number;
+}
+
+// Coincide con GruposPorEtapaSchema
+export interface DistribucionEtapa {
+  etapa: string;
+  cantidad: number;
+}
+
+// Coincide con GruposPorNivelSchema
+export interface DistribucionNivel {
+  nivel: string;
+  cantidad: number;
+}
+
 /**
  * Función para obtener los grupos por código de centro
  * @param cod_centro - Código del centro para filtrar los grupos
@@ -160,6 +203,95 @@ const asignarInstructorAFicha = async (payload: GrupoInstructor): Promise<GrupoI
   }
 };
 
+// --- Servicios del Dashboard (NUEVO) ---
+
+/**
+ * Función auxiliar para construir los parámetros de consulta de la URL
+ * @param filters - Objeto con los filtros a aplicar
+ * @returns Un string con los parámetros para la URL
+ */
+const buildDashboardQueryParams = (filters: DashboardFilters): string => {
+  const params = new URLSearchParams();
+  
+  // Obtener cod_centro del localStorage
+  const codCentro = localStorage.getItem('cod_centro');
+  if (codCentro) {
+    params.append('cod_centro', codCentro);
+  }
+  
+  params.append('estado_grupo', filters.estado_grupo);
+  if (filters.año) {
+    params.append('año', filters.año.toString());
+  }
+  return params.toString();
+};
+
+const getDashboardKPIs = async (filters: DashboardFilters): Promise<DashboardKPI> => {
+  try {
+    const queryParams = buildDashboardQueryParams(filters);
+    const endpoint = `/dashboard/kpis?${queryParams}`;
+    return await apiClient(endpoint, 'GET');
+  } catch (error) {
+    console.error('Error al obtener los KPIs del dashboard:', error);
+    throw error;
+  }
+};
+
+const getDistribucionPorMunicipio = async (filters: DashboardFilters): Promise<DistribucionMunicipio[]> => {
+  try {
+    const queryParams = buildDashboardQueryParams(filters);
+    const endpoint = `/dashboard/distribucion/por-municipio?${queryParams}`;
+    return await apiClient(endpoint, 'GET');
+  } catch (error) {
+    console.error('Error al obtener la distribución por municipio:', error);
+    throw error;
+  }
+};
+
+const getDistribucionPorJornada = async (filters: DashboardFilters): Promise<DistribucionJornada[]> => {
+  try {
+    const queryParams = buildDashboardQueryParams(filters);
+    const endpoint = `/dashboard/distribucion/por-jornada?${queryParams}`;
+    return await apiClient(endpoint, 'GET');
+  } catch (error) {
+    console.error('Error al obtener la distribución por jornada:', error);
+    throw error;
+  }
+};
+
+const getDistribucionPorModalidad = async (filters: DashboardFilters): Promise<DistribucionModalidad[]> => {
+  try {
+    const queryParams = buildDashboardQueryParams(filters);
+    const endpoint = `/dashboard/distribucion/por-modalidad?${queryParams}`;
+    return await apiClient(endpoint, 'GET');
+  } catch (error) {
+    console.error('Error al obtener la distribución por modalidad:', error);
+    throw error;
+  }
+};
+
+const getDistribucionPorEtapa = async (filters: DashboardFilters): Promise<DistribucionEtapa[]> => {
+  try {
+    const queryParams = buildDashboardQueryParams(filters);
+    const endpoint = `/dashboard/distribucion/por-etapa?${queryParams}`;
+    return await apiClient(endpoint, 'GET');
+  } catch (error) {
+    console.error('Error al obtener la distribución por etapa:', error);
+    throw error;
+  }
+};
+
+const getDistribucionPorNivel = async (filters: DashboardFilters): Promise<DistribucionNivel[]> => {
+  try {
+    const queryParams = buildDashboardQueryParams(filters);
+    const endpoint = `/dashboard/distribucion/por-nivel?${queryParams}`;
+    return await apiClient(endpoint, 'GET');
+  } catch (error) {
+    console.error('Error al obtener la distribución por nivel:', error);
+    throw error;
+  }
+};
+
 // Exportar las funciones como un objeto grupoService
 export const grupoService = {
   getGruposByCentro,
@@ -168,4 +300,11 @@ export const grupoService = {
   searchGrupos,
   getGruposPorInstructor,
   asignarInstructorAFicha,
+  // Nuevos servicios de Dashboard
+  getDashboardKPIs,
+  getDistribucionPorMunicipio,
+  getDistribucionPorJornada,
+  getDistribucionPorModalidad,
+  getDistribucionPorEtapa,
+  getDistribucionPorNivel,
 };
