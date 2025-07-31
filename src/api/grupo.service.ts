@@ -37,6 +37,19 @@ export interface GrupoInstructor {
   id_instructor: number;
 }
 
+// Interfaz para la respuesta completa del endpoint grupo-instructor/instructor/{id}
+export interface GrupoInstructorCompleto {
+  cod_ficha: number;
+  id_instructor: number;
+  estado_grupo: string;
+  jornada: string;
+  fecha_inicio: string;
+  fecha_fin: string;
+  etapa: string;
+  nombre_programa: string;
+  nombre_centro: string;
+}
+
 // --- Interfaces para el Dashboard ---
 
 // Define los filtros que usarán los endpoints del dashboard
@@ -159,32 +172,66 @@ const searchGrupos = async (query: string, limit: number = 20): Promise<Grupo[]>
  */
 const getGruposPorInstructor = async (idInstructor: number): Promise<Grupo[]> => {
   try {
-    // Primero obtener las relaciones grupo-instructor
+    // Obtener directamente la información completa desde el endpoint
     const endpoint = `/grupo-instructor/instructor/${idInstructor}`;
-    const relaciones: GrupoInstructor[] = await apiClient(endpoint, 'GET');
+    const gruposCompletos: GrupoInstructorCompleto[] = await apiClient(endpoint, 'GET');
     
-    console.log("📊 [DEBUG] Relaciones grupo-instructor recibidas:", relaciones);
-    
-    if (!relaciones || relaciones.length === 0) {
-      console.log("❌ [DEBUG] No se encontraron fichas para el instructor");
+    if (!gruposCompletos || gruposCompletos.length === 0) {
       return [];
     }
     
-    // Obtener la información completa de cada grupo
-    const gruposCompletos: Grupo[] = [];
+    // Para cada grupo, obtener información adicional necesaria para competencias
+    const grupos: Grupo[] = [];
     
-    for (const relacion of relaciones) {
+    for (const grupoCompleto of gruposCompletos) {
       try {
-        const grupoCompleto = await getGrupoByFicha(relacion.cod_ficha);
-        gruposCompletos.push(grupoCompleto);
+        // Obtener información adicional del grupo (incluyendo cod_programa y la_version)
+        const grupoDetallado = await getGrupoByFicha(grupoCompleto.cod_ficha);
+        
+        // Combinar la información del endpoint optimizado con los detalles adicionales
+        const grupoFinal: Grupo = {
+          cod_ficha: grupoCompleto.cod_ficha,
+          estado_grupo: grupoCompleto.estado_grupo,
+          jornada: grupoCompleto.jornada,
+          fecha_inicio: grupoCompleto.fecha_inicio,
+          fecha_fin: grupoCompleto.fecha_fin,
+          etapa: grupoCompleto.etapa,
+          nombre_programa: grupoCompleto.nombre_programa,
+          nombre_municipio: grupoCompleto.nombre_centro,
+          // Campos adicionales necesarios para competencias
+          cod_programa: grupoDetallado.cod_programa,
+          la_version: grupoDetallado.la_version,
+          cod_centro: grupoDetallado.cod_centro,
+          hora_inicio: grupoDetallado.hora_inicio,
+          hora_fin: grupoDetallado.hora_fin,
+          // Otros campos que puedan ser útiles
+          modalidad: grupoDetallado.modalidad,
+          responsable: grupoDetallado.responsable,
+          id_ambiente: grupoDetallado.id_ambiente,
+        };
+        
+        grupos.push(grupoFinal);
+        
       } catch (error) {
-        console.error(`❌ [ERROR] Error al obtener grupo ${relacion.cod_ficha}:`, error);
-        // Continuar con el siguiente grupo en caso de error
+        console.error(`❌ [ERROR] Error al obtener detalles del grupo ${grupoCompleto.cod_ficha}:`, error);
+        
+        // En caso de error, usar solo la información básica disponible
+        const grupoBasico: Grupo = {
+          cod_ficha: grupoCompleto.cod_ficha,
+          estado_grupo: grupoCompleto.estado_grupo,
+          jornada: grupoCompleto.jornada,
+          fecha_inicio: grupoCompleto.fecha_inicio,
+          fecha_fin: grupoCompleto.fecha_fin,
+          etapa: grupoCompleto.etapa,
+          nombre_programa: grupoCompleto.nombre_programa,
+          nombre_municipio: grupoCompleto.nombre_centro,
+        };
+        
+        grupos.push(grupoBasico);
       }
     }
     
-    console.log("🎯 [DEBUG] Grupos completos obtenidos:", gruposCompletos);
-    return gruposCompletos;
+    return grupos;
     
   } catch (error) {
     console.error(`Error al obtener grupos para el instructor ${idInstructor}:`, error);

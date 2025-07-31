@@ -12,6 +12,7 @@ import { grupoService, Grupo } from "../api/grupo.service";
 import { programacionService, Programacion } from "../api/programacion.service";
 import { userService, User } from "../api/user.service";
 import { festivosService, FestivosResponse } from "../api/festivos.service";
+import useAuth from "../hooks/useAuth";
 import './calendar-styles.css';
 
 interface CalendarEvent extends EventInput {
@@ -69,20 +70,50 @@ const Calendar: React.FC = () => {
   const calendarRef = useRef<FullCalendar>(null);
   const { isOpen, openModal, closeModal } = useModal();
 
+  // Obtener información del usuario autenticado
+  const user = useAuth();
+
+  // useEffect para carga condicional basada en el rol del usuario
+  useEffect(() => {
+    if (!user) {
+      return;
+    }
+
+    // Si el usuario es instructor, establecer automáticamente instructorSeleccionado
+    if (user.nombre_rol?.toLowerCase() === 'instructor') {
+      // Crear objeto InstructorOption usando los datos del usuario
+      const instructorOption: InstructorOption = {
+        value: user.id_usuario,
+        label: user.nombre_completo,
+        instructor: {
+          id: user.id_usuario,
+          id_usuario: user.id_usuario,
+          nombre_completo: user.nombre_completo,
+          correo: user.correo || user.email,
+          estado: true,
+          telefono: user.telefono,
+          tipo_contrato: user.tipo_contrato,
+          identificacion: user.identificacion,
+          id_rol: user.id_rol,
+          nombre_rol: user.nombre_rol
+        }
+      };
+
+      setInstructorSeleccionado(instructorOption);
+    }
+  }, [user]); // Se ejecuta cuando cambia el usuario
+
   // Cargar festivos y domingos al inicializar el componente
   useEffect(() => {
     const loadFestivos = async () => {
-      console.log("🎄 [DEBUG] Cargando festivos y domingos...");
       try {
         const currentYear = new Date().getFullYear();
         const festivosResponse = await festivosService.getFestivosYDomingos(currentYear);
         
-        console.log("📅 [DEBUG] Festivos cargados:", festivosResponse);
         setFestivosData(festivosResponse);
         
         // Crear Set de fechas no laborables para búsqueda rápida
         const fechasNoLaborablesSet = festivosService.getFechasNoLaborables(festivosResponse);
-        console.log("🚫 [DEBUG] Fechas no laborables:", Array.from(fechasNoLaborablesSet));
         setFechasNoLaborables(fechasNoLaborablesSet);
         
       } catch (error) {
@@ -98,22 +129,14 @@ const Calendar: React.FC = () => {
 
   // Función para cargar opciones de instructores de forma asíncrona
   const loadInstructorOptions = useCallback(async (inputValue: string): Promise<InstructorOption[]> => {
-    console.log("🔍 [DEBUG] loadInstructorOptions llamado con inputValue:", inputValue);
-    
     if (!inputValue || inputValue.length < 2) {
-      console.log("❌ [DEBUG] InputValue muy corto, retornando array vacío");
       return [];
     }
 
     try {
-      console.log("🚀 [DEBUG] Llamando a userService.getInstructores...");
       const instructores = await userService.getInstructores();
       
-      console.log("📊 [DEBUG] Respuesta de instructores:", instructores);
-      console.log("📊 [DEBUG] Número de instructores recibidos:", instructores?.length || 0);
-      
       if (!instructores || instructores.length === 0) {
-        console.log("❌ [DEBUG] No se encontraron instructores");
         return [];
       }
 
@@ -130,7 +153,6 @@ const Calendar: React.FC = () => {
         instructor: instructor,
       }));
 
-      console.log("🎯 [DEBUG] Instructores mapeados:", mappedOptions);
       return mappedOptions;
 
     } catch (error) {
@@ -153,20 +175,9 @@ const Calendar: React.FC = () => {
   // Cargar fichas disponibles cuando cambie el instructor seleccionado
   useEffect(() => {
     const loadFichasDisponibles = async () => {
-      console.log("🔍 [DEBUG] useEffect loadFichasDisponibles triggered");
-      console.log("👨‍🏫 [DEBUG] instructorSeleccionado:", instructorSeleccionado);
-      
       if (instructorSeleccionado?.value) {
-        console.log("✅ [DEBUG] Instructor válido encontrado:");
-        console.log("   - id_instructor:", instructorSeleccionado.value);
-        console.log("   - instructor completo:", instructorSeleccionado.instructor);
-        
         try {
-          console.log("🚀 [DEBUG] Llamando a grupoService.getGruposPorInstructor...");
           const fichasData = await grupoService.getGruposPorInstructor(instructorSeleccionado.value);
-          
-          console.log("📊 [DEBUG] Respuesta de fichas:", fichasData);
-          console.log("📊 [DEBUG] Número de fichas recibidas:", fichasData?.length || 0);
           
           const fichaOptions = fichasData.map((grupo) => ({
             value: grupo.cod_ficha,
@@ -174,14 +185,12 @@ const Calendar: React.FC = () => {
             grupo: grupo,
           }));
           
-          console.log("🎯 [DEBUG] Fichas mapeadas:", fichaOptions);
           setFichasDisponibles(fichaOptions);
         } catch (error) {
           console.error("❌ [ERROR] Error al cargar fichas del instructor:", error);
           setFichasDisponibles([]);
         }
       } else {
-        console.log("❌ [DEBUG] No hay instructor seleccionado");
         setFichasDisponibles([]);
         setSelectedFicha(null);
         setCompetencias([]);
@@ -197,43 +206,24 @@ const Calendar: React.FC = () => {
   // Cargar competencias cuando cambie la ficha seleccionada
   useEffect(() => {
     const loadCompetencias = async () => {
-      console.log("🔍 [DEBUG] useEffect loadCompetencias triggered");
-      console.log("📄 [DEBUG] selectedFicha:", selectedFicha);
-      
       if (selectedFicha?.grupo?.cod_programa && selectedFicha?.grupo?.la_version) {
-        console.log("✅ [DEBUG] Ficha válida encontrada:");
-        console.log("   - cod_programa:", selectedFicha.grupo.cod_programa);
-        console.log("   - la_version:", selectedFicha.grupo.la_version);
-        console.log("   - grupo completo:", selectedFicha.grupo);
-        
         try {
-          console.log("🚀 [DEBUG] Llamando a programacionService.getCompetenciasPorPrograma...");
           const competenciasData = await programacionService.getCompetenciasPorPrograma(
             selectedFicha.grupo.cod_programa,
             selectedFicha.grupo.la_version
           );
-          
-          console.log("📊 [DEBUG] Respuesta de competencias:", competenciasData);
-          console.log("📊 [DEBUG] Número de competencias recibidas:", competenciasData?.length || 0);
           
           const competenciaOptions = competenciasData.map((competencia) => ({
             value: competencia.cod_competencia,
             label: competencia.nombre,
           }));
           
-          console.log("🎯 [DEBUG] Competencias mapeadas:", competenciaOptions);
           setCompetencias(competenciaOptions);
         } catch (error) {
           console.error("❌ [ERROR] Error al cargar competencias:", error);
           setCompetencias([]);
         }
       } else {
-        console.log("❌ [DEBUG] Ficha no válida o datos faltantes:");
-        console.log("   - selectedFicha existe:", !!selectedFicha);
-        console.log("   - grupo existe:", !!selectedFicha?.grupo);
-        console.log("   - cod_programa:", selectedFicha?.grupo?.cod_programa);
-        console.log("   - la_version:", selectedFicha?.grupo?.la_version);
-        
         setCompetencias([]);
         setSelectedCompetencia(null);
         setResultados([]);
@@ -247,34 +237,21 @@ const Calendar: React.FC = () => {
   // Cargar resultados cuando cambie la competencia seleccionada
   useEffect(() => {
     const loadResultados = async () => {
-      console.log("🔍 [DEBUG] useEffect loadResultados triggered");
-      console.log("🎯 [DEBUG] selectedCompetencia:", selectedCompetencia);
-      
       if (selectedCompetencia?.value) {
-        console.log("✅ [DEBUG] Competencia válida encontrada:");
-        console.log("   - cod_competencia:", selectedCompetencia.value);
-        console.log("   - label:", selectedCompetencia.label);
-        
         try {
-          console.log("🚀 [DEBUG] Llamando a programacionService.getResultadosPorCompetencia...");
           const resultadosData = await programacionService.getResultadosPorCompetencia(selectedCompetencia.value);
-          
-          console.log("📊 [DEBUG] Respuesta de resultados:", resultadosData);
-          console.log("📊 [DEBUG] Número de resultados recibidos:", resultadosData?.length || 0);
           
           const resultadoOptions = resultadosData.map((resultado) => ({
             value: resultado.cod_resultado,
             label: resultado.nombre,
           }));
           
-          console.log("🎯 [DEBUG] Resultados mapeados:", resultadoOptions);
           setResultados(resultadoOptions);
         } catch (error) {
           console.error("❌ [ERROR] Error al cargar resultados:", error);
           setResultados([]);
         }
       } else {
-        console.log("❌ [DEBUG] No hay competencia seleccionada");
         setResultados([]);
         setSelectedResultado(null);
       }
@@ -284,17 +261,10 @@ const Calendar: React.FC = () => {
   }, [selectedCompetencia]);
 
   const handleDateSelect = (selectInfo: DateSelectArg) => {
-    console.log("📅 [DEBUG] handleDateSelect llamado");
-    console.log("📄 [DEBUG] selectInfo:", selectInfo);
-    console.log("📄 [DEBUG] instructorSeleccionado actual:", instructorSeleccionado);
-    
     const fechaSeleccionada = selectInfo.startStr;
-    console.log("📅 [DEBUG] Fecha seleccionada:", fechaSeleccionada);
     
     // Verificar si la fecha seleccionada es un día no laborable
     if (fechasNoLaborables.has(fechaSeleccionada)) {
-      console.log("🚫 [DEBUG] Fecha no laborable detectada:", fechaSeleccionada);
-      
       let tipoFecha = "";
       if (festivosData?.festivos.includes(fechaSeleccionada)) {
         tipoFecha = "día festivo";
@@ -308,8 +278,6 @@ const Calendar: React.FC = () => {
       return; // Salir sin abrir el modal
     }
     
-    console.log("✅ [DEBUG] Fecha laborable, continuando...");
-    
     resetModalFields();
     setEventStartDate(selectInfo.startStr);
     setEventEndDate(selectInfo.endStr || selectInfo.startStr);
@@ -318,7 +286,6 @@ const Calendar: React.FC = () => {
     setEventStartTime("08:00");
     setEventEndTime("17:00");
     
-    console.log("🚀 [DEBUG] Abriendo modal...");
     openModal();
   };
 
@@ -472,9 +439,6 @@ const Calendar: React.FC = () => {
   };
 
   const handleInstructorChange = (selectedOption: InstructorOption | null) => {
-    console.log("👨‍🏫 [DEBUG] handleInstructorChange llamado");
-    console.log("📄 [DEBUG] selectedOption:", selectedOption);
-    
     setInstructorSeleccionado(selectedOption);
     // Limpiar selecciones de fichas y competencias cuando cambia el instructor
     setSelectedFicha(null);
@@ -482,174 +446,155 @@ const Calendar: React.FC = () => {
     setSelectedCompetencia(null);
     setResultados([]);
     setSelectedResultado(null);
-    
-         if (selectedOption) {
-       console.log("✅ [DEBUG] Nuevo instructor seleccionado:");
-       console.log("   - id_instructor:", selectedOption.value);
-       console.log("   - label:", selectedOption.label);
-       console.log("   - instructor completo:", selectedOption.instructor);
-     } else {
-       console.log("❌ [DEBUG] Instructor deseleccionado");
-     }
-   };
+  };
 
   const handleFichaChange = (selectedOption: GrupoOption | null) => {
-    console.log("🔄 [DEBUG] handleFichaChange llamado");
-    console.log("📄 [DEBUG] selectedOption:", selectedOption);
-    
     setSelectedFicha(selectedOption);
     // Limpiar selecciones de competencias y resultados cuando cambia la ficha
     setSelectedCompetencia(null);
     setSelectedResultado(null);
     
     if (selectedOption) {
-      console.log("✅ [DEBUG] Nueva ficha seleccionada:");
-      console.log("   - cod_ficha:", selectedOption.value);
-      console.log("   - label:", selectedOption.label);
-      console.log("   - grupo.cod_programa:", selectedOption.grupo?.cod_programa);
-      console.log("   - grupo.la_version:", selectedOption.grupo?.la_version);
-      console.log("   - grupo completo:", selectedOption.grupo);
-      
       // Pre-rellenar horas de la ficha si están disponibles
       if (selectedOption.grupo?.hora_inicio && selectedOption.grupo?.hora_fin) {
         setEventStartTime(selectedOption.grupo.hora_inicio);
         setEventEndTime(selectedOption.grupo.hora_fin);
       }
-    } else {
-      console.log("❌ [DEBUG] Ficha deseleccionada");
     }
   };
 
   return (
     <>
-      {/* Barra de herramientas superior */}
-      <div className="mb-6 rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex-1 max-w-md">
-            <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-400">
-              Buscar Instructor
-            </label>
-            <AsyncSelect
-              cacheOptions
-              loadOptions={loadInstructorOptions}
-              onChange={handleInstructorChange}
-              value={instructorSeleccionado}
-              placeholder="Buscar por nombre, ID o correo..."
-              noOptionsMessage={({ inputValue }) =>
-                inputValue.length < 2
-                  ? "Escribe al menos 2 caracteres para buscar"
-                  : "No se encontraron instructores"
-              }
-              loadingMessage={() => "Buscando instructores..."}
-              defaultOptions={false}
-              styles={{
-                control: (provided) => ({
-                  ...provided,
-                  minHeight: '44px',
-                  backgroundColor: 'transparent',
-                  borderColor: '#d1d5db',
-                  '&:hover': {
+      {/* Sección del buscador de instructores - Solo visible para coordinadores y superadmin */}
+      {user && user.nombre_rol?.toLowerCase() !== 'instructor' && (
+        <div className="mb-6 rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex-1 max-w-md">
+              <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                Buscar Instructor
+              </label>
+              <AsyncSelect
+                cacheOptions
+                loadOptions={loadInstructorOptions}
+                onChange={handleInstructorChange}
+                value={instructorSeleccionado}
+                placeholder="Buscar por nombre, ID o correo..."
+                noOptionsMessage={({ inputValue }) =>
+                  inputValue.length < 2
+                    ? "Escribe al menos 2 caracteres para buscar"
+                    : "No se encontraron instructores"
+                }
+                loadingMessage={() => "Buscando instructores..."}
+                defaultOptions={false}
+                styles={{
+                  control: (provided) => ({
+                    ...provided,
+                    minHeight: '44px',
+                    backgroundColor: 'transparent',
                     borderColor: '#d1d5db',
-                  },
-                  '&:focus-within': {
-                    borderColor: '#3b82f6',
-                    boxShadow: '0 0 0 3px rgba(59, 130, 246, 0.1)',
-                  },
-                }),
-                placeholder: (provided) => ({
-                  ...provided,
-                  color: '#9ca3af',
-                  fontSize: '14px',
-                }),
-                singleValue: (provided) => ({
-                  ...provided,
-                  color: '#374151',
-                  fontSize: '14px',
-                }),
-                menu: (provided) => ({
-                  ...provided,
-                  backgroundColor: 'white',
-                  border: '1px solid #d1d5db',
-                  borderRadius: '8px',
-                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                }),
-                option: (provided, state) => ({
-                  ...provided,
-                  backgroundColor: state.isSelected
-                    ? '#3b82f6'
-                    : state.isFocused
-                    ? '#eff6ff'
-                    : 'white',
-                  color: state.isSelected ? 'white' : '#374151',
-                  fontSize: '14px',
-                  padding: '8px 12px',
-                }),
-              }}
-            />
-          </div>
-          
-          <div className="flex items-center gap-3">
-            {instructorSeleccionado && (
-              <div className="rounded-lg bg-blue-50 px-3 py-2 text-sm text-blue-700 dark:bg-blue-900/20 dark:text-blue-300">
-                <span className="font-medium">Instructor seleccionado:</span> {instructorSeleccionado.label}
-              </div>
-            )}
-            {selectedFicha && (
-              <div className="rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700 dark:bg-green-900/20 dark:text-green-300">
-                <span className="font-medium">Ficha seleccionada:</span> {selectedFicha.label}
-              </div>
-            )}
-                         <button
-               onClick={openModal}
-               disabled={!instructorSeleccionado}
-               className="flex items-center justify-center rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-brand-500"
-             >
-               <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-               </svg>
-               Agregar Programación
-             </button>
+                    '&:hover': {
+                      borderColor: '#d1d5db',
+                    },
+                    '&:focus-within': {
+                      borderColor: '#3b82f6',
+                      boxShadow: '0 0 0 3px rgba(59, 130, 246, 0.1)',
+                    },
+                  }),
+                  placeholder: (provided) => ({
+                    ...provided,
+                    color: '#9ca3af',
+                    fontSize: '14px',
+                  }),
+                  singleValue: (provided) => ({
+                    ...provided,
+                    color: '#374151',
+                    fontSize: '14px',
+                  }),
+                  menu: (provided) => ({
+                    ...provided,
+                    backgroundColor: 'white',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '8px',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                  }),
+                  option: (provided, state) => ({
+                    ...provided,
+                    backgroundColor: state.isSelected
+                      ? '#3b82f6'
+                      : state.isFocused
+                      ? '#eff6ff'
+                      : 'white',
+                    color: state.isSelected ? 'white' : '#374151',
+                    fontSize: '14px',
+                    padding: '8px 12px',
+                  }),
+                }}
+              />
+            </div>
+            
+            <div className="flex items-center gap-3">
+              {instructorSeleccionado && (
+                <div className="rounded-lg bg-blue-50 px-3 py-2 text-sm text-blue-700 dark:bg-blue-900/20 dark:text-blue-300">
+                  <span className="font-medium">Instructor seleccionado:</span> {instructorSeleccionado.label}
+                </div>
+              )}
+              {selectedFicha && (
+                <div className="rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700 dark:bg-green-900/20 dark:text-green-300">
+                  <span className="font-medium">Ficha seleccionada:</span> {selectedFicha.label}
+                </div>
+              )}
+              <button
+                onClick={openModal}
+                disabled={!instructorSeleccionado}
+                className="flex items-center justify-center rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-brand-500"
+              >
+                <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                Agregar Programación
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
+
+      {/* Información del instructor actual para vista de instructor */}
+      {user && user.nombre_rol?.toLowerCase() === 'instructor' && instructorSeleccionado && (
+        <div className="mb-6 rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/20">
+              <svg className="h-6 w-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            </div>
+            <div className="flex-1">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                Mi Programación Semanal
+              </h2>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Bienvenido, {instructorSeleccionado.label}
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                Gestiona tu horario académico y programaciones de clase
+              </p>
+            </div>
+            <div className="ml-auto">
+              <button
+                onClick={openModal}
+                className="flex items-center justify-center rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 transition-colors"
+              >
+                <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                Nueva Programación
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Calendario */}
       <div className="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
-        {/* Leyenda de días no laborables */}
-        {festivosData && (
-          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-800">
-            <div className="flex flex-wrap items-center gap-4 text-sm">
-              <span className="font-medium text-gray-700 dark:text-gray-300">Leyenda:</span>
-              
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 bg-yellow-100 border border-yellow-300 rounded-sm relative">
-                  <div className="absolute inset-0 bg-yellow-200 opacity-30" style={{
-                    background: 'repeating-linear-gradient(45deg, transparent, transparent 1px, rgba(245, 158, 11, 0.3) 1px, rgba(245, 158, 11, 0.3) 2px)'
-                  }}></div>
-                  <span className="absolute -top-1 -right-1 text-xs">🎉</span>
-                </div>
-                <span className="text-gray-600 dark:text-gray-400">Días festivos ({festivosData.festivos.length})</span>
-              </div>
-              
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 bg-red-100 border border-red-300 rounded-sm relative">
-                  <div className="absolute inset-0 bg-red-200 opacity-30" style={{
-                    background: 'repeating-linear-gradient(45deg, transparent, transparent 1px, rgba(239, 68, 68, 0.3) 1px, rgba(239, 68, 68, 0.3) 2px)'
-                  }}></div>
-                  <span className="absolute -top-1 -right-1 text-xs">🔒</span>
-                </div>
-                <span className="text-gray-600 dark:text-gray-400">Domingos ({festivosData.domingos.length})</span>
-              </div>
-              
-              <div className="flex items-center gap-2 ml-4">
-                <span className="text-gray-500 dark:text-gray-400 text-xs">
-                  💡 Los días marcados no permiten programación
-                </span>
-              </div>
-            </div>
-          </div>
-        )}
-        
         <div className="custom-calendar">
           <FullCalendar
             ref={calendarRef}
@@ -666,7 +611,6 @@ const Calendar: React.FC = () => {
               // Función para validar si la fecha es seleccionable
               const dateStr = selectInfo.start.toISOString().split('T')[0];
               const esSeleccionable = !fechasNoLaborables.has(dateStr);
-              console.log(`🎯 [DEBUG] selectAllow para ${dateStr}: ${esSeleccionable}`);
               
               if (!esSeleccionable) {
                 // Mostrar mensaje inmediatamente cuando se intenta seleccionar
@@ -677,7 +621,6 @@ const Calendar: React.FC = () => {
                   } else if (festivosData?.domingos.includes(dateStr)) {
                     tipoFecha = "domingo";
                   }
-                  console.log(`🚫 [DEBUG] Intento de selección bloqueado en ${tipoFecha}: ${dateStr}`);
                 }, 100);
               }
               
@@ -727,33 +670,6 @@ const Calendar: React.FC = () => {
                 )}
               </p>
               {/* Debug info - remove in production */}
-              {isOpen && (() => {
-                console.log("🔍 [DEBUG] Modal abierto - Estado actual:", {
-                  instructorSeleccionado,
-                  selectedFicha,
-                  fichasDisponibles,
-                  competencias,
-                  resultados,
-                  selectedCompetencia,
-                  selectedResultado,
-                  festivosData,
-                  fechasNoLaborables: Array.from(fechasNoLaborables)
-                });
-                return (
-                  <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs">
-                    <strong>🐛 DEBUG INFO:</strong><br/>
-                    Instructor: {instructorSeleccionado?.value || 'null'}<br/>
-                    Ficha Sel.: {selectedFicha?.value || 'null'}<br/>
-                    Fichas Disp.: {fichasDisponibles.length}<br/>
-                    Competencias: {competencias.length}<br/>
-                    Comp. Sel.: {selectedCompetencia?.value || 'null'}<br/>
-                    Res. Sel.: {selectedResultado?.value || 'null'}<br/>
-                    Festivos: {festivosData?.festivos.length || 0}<br/>
-                    Domingos: {festivosData?.domingos.length || 0}<br/>
-                    Fechas Bloq.: {fechasNoLaborables.size}
-                  </div>
-                );
-              })()}
               {selectedEvent?.extendedProps?.programacion && (
                 <div className="mt-2 p-3 bg-blue-50 rounded-lg border border-blue-200 dark:bg-blue-900/20 dark:border-blue-800">
                   <div className="text-sm">
@@ -834,7 +750,6 @@ const Calendar: React.FC = () => {
                     options={competencias}
                     value={selectedCompetencia}
                     onChange={(option) => {
-                      console.log("🎯 [DEBUG] Competencia seleccionada:", option);
                       setSelectedCompetencia(option);
                       setSelectedResultado(null); // Limpiar resultado cuando cambie competencia
                     }}
@@ -879,7 +794,6 @@ const Calendar: React.FC = () => {
                     options={resultados}
                     value={selectedResultado}
                     onChange={(option) => {
-                      console.log("📝 [DEBUG] Resultado seleccionado:", option);
                       setSelectedResultado(option);
                     }}
                     placeholder="Seleccionar resultado..."
