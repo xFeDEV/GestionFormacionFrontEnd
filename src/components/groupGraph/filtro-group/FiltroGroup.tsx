@@ -29,8 +29,8 @@ const FiltroGroup: React.FC<FiltroGroupProps> = ({
   // Opciones para el nivel del grupo
   const nivelOptions = [
     { value: "AUXILIAR", label: "AUXILIAR" },
-    { value: "COMPLEMENTARIA VIRTUAL", label: "COMPLEMENTARIA VIRTUAL" },
     { value: "CURSO ESPECIAL", label: "CURSO ESPECIAL" },
+    { value: "EVENTO", label: "EVENTO" },
     { value: "OPERARIO", label: "OPERARIO" },
     { value: "TÉCNICO", label: "TÉCNICO" },
     { value: "TECNÓLOGO", label: "TECNÓLOGO" }
