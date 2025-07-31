@@ -48,13 +48,13 @@ export default function GroupKpi({ filters }: GroupKpiProps) {
         <div className="flex items-end justify-between mt-5">
           <div>
             <span className="text-sm text-gray-500 dark:text-gray-400">
-              Total grupos de Formación
+              Total Grupos de Formación
             </span>
-            <h4 className="mt-2 font-bold text-gray-800 text-title-sm dark:text-white/90">
+            <h4 className="mt-2 text-gray-500 text-title-sm dark:text-white/90">
               {isLoading ? (
                 <span className="animate-pulse">Cargando...</span>
               ) : error ? (
-                <span className="text-red-500">Error</span>
+                <span className="text-red-500">No se pudieron cargar los datos.</span>
               ) : (
                 kpiData?.total_grupo?.toLocaleString() || "0"
               )}
