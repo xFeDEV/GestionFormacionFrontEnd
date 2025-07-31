@@ -39,7 +39,6 @@ const FiltroGroup: React.FC<FiltroGroupProps> = ({
   const etapaOptions = [
     { value: "LECTIVA", label: "LECTIVA" },
     { value: "PRODUCTIVA", label: "PRODUCTIVA" },
-    { value: "SEGUIMIENTO", label: "SEGUIMIENTO" }
   ];
 
   // Opciones para la modalidad
@@ -52,14 +51,12 @@ const FiltroGroup: React.FC<FiltroGroupProps> = ({
 
   // Opciones para la jornada
   const jornadaOptions = [
-    { value: "MAÑANA", label: "MAÑANA" },
-    { value: "TARDE", label: "TARDE" },
-    { value: "NOCHE", label: "NOCHE" },
+    { value: "DIURNA", label: "MAÑANA" },
     { value: "MIXTA", label: "MIXTA" },
-    { value: "MADRUGADA", label: "MADRUGADA" }
+    { value: "NOCTURNA", label: "MADRUGADA" }
   ];
 
-  // Opciones para el municipio de Risaralda
+  // Opciones para el municipio
   const municipioOptions = [
     { value: "PEREIRA", label: "PEREIRA" },
     { value: "DOSQUEBRADAS", label: "DOSQUEBRADAS" },
