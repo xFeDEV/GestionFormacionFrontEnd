@@ -905,14 +905,38 @@ const Calendar: React.FC = () => {
 };
 
 const renderEventContent = (eventInfo: any) => {
+  const programacion = eventInfo.event.extendedProps?.programacion;
   const colorClass = `fc-bg-${eventInfo.event.extendedProps.calendar.toLowerCase()}`;
+  
   return (
     <div
-      className={`event-fc-color flex fc-event-main ${colorClass} p-1 rounded-sm cursor-pointer hover:opacity-80 transition-opacity`}
+      className={`event-fc-color fc-event-main ${colorClass} w-full h-full min-h-[20px] p-1 rounded-sm cursor-pointer hover:opacity-80 transition-opacity overflow-hidden`}
+      style={{
+        fontSize: '11px',
+        lineHeight: '1.2',
+        maxWidth: '100%',
+        wordBreak: 'break-word',
+        hyphens: 'auto'
+      }}
     >
-      <div className="fc-daygrid-event-dot"></div>
-      <div className="fc-event-time">{eventInfo.timeText}</div>
-      <div className="fc-event-title">{eventInfo.event.title}</div>
+      <div className="flex flex-col h-full justify-center">
+        {/* Ficha */}
+        <div className="font-semibold text-xs truncate">
+          {programacion?.cod_ficha ? `${programacion.cod_ficha}` : 'Sin ficha'}
+        </div>
+        
+        {/* Horario */}
+        <div className="text-[10px] opacity-90 truncate">
+          {eventInfo.timeText || `${programacion?.hora_inicio || ''} - ${programacion?.hora_fin || ''}`}
+        </div>
+        
+        {/* Horas programadas (solo si hay espacio) */}
+        {programacion?.horas_programadas && (
+          <div className="text-[9px] opacity-75 truncate hidden sm:block">
+            {programacion.horas_programadas}h
+          </div>
+        )}
+      </div>
     </div>
   );
 };
