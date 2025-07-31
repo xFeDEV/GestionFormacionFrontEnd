@@ -43,6 +43,11 @@ export interface GrupoInstructor {
 export interface DashboardFilters {
   estado_grupo: string;
   año?: number; // El año es opcional
+  nombre_nivel?: string; // El nombre del nivel es opcional
+  etapa?: string; // La etapa es opcional
+  modalidad?: string; // La modalidad es opcional
+  jornada?: string; // La jornada es opcional
+  nombre_municipio?: string; // El nombre del municipio es opcional
 }
 
 // Coincide con DashboardKPISchema
@@ -229,6 +234,21 @@ const buildDashboardQueryParams = (filters: DashboardFilters): string => {
   params.append('estado_grupo', filters.estado_grupo);
   if (filters.año) {
     params.append('año', filters.año.toString());
+  }
+  if (filters.nombre_nivel) {
+    params.append('nombre_nivel', filters.nombre_nivel);
+  }
+  if (filters.etapa) {
+    params.append('etapa', filters.etapa);
+  }
+  if (filters.modalidad) {
+    params.append('modalidad', filters.modalidad);
+  }
+  if (filters.jornada) {
+    params.append('jornada', filters.jornada);
+  }
+  if (filters.nombre_municipio) {
+    params.append('nombre_municipio', filters.nombre_municipio);
   }
   return params.toString();
 };

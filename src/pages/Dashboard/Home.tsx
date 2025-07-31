@@ -10,7 +10,6 @@ import { useState } from "react";
 export default function Home() {
   const [filters, setFilters] = useState<DashboardFilters>({
     estado_grupo: "En ejecucion",
-    año: new Date().getFullYear(),
   });
 
   return (
