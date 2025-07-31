@@ -612,18 +612,6 @@ const Calendar: React.FC = () => {
               const dateStr = selectInfo.start.toISOString().split('T')[0];
               const esSeleccionable = !fechasNoLaborables.has(dateStr);
               
-              if (!esSeleccionable) {
-                // Mostrar mensaje inmediatamente cuando se intenta seleccionar
-                setTimeout(() => {
-                  let tipoFecha = "día no laborable";
-                  if (festivosData?.festivos.includes(dateStr)) {
-                    tipoFecha = "día festivo";
-                  } else if (festivosData?.domingos.includes(dateStr)) {
-                    tipoFecha = "domingo";
-                  }
-                }, 100);
-              }
-              
               return esSeleccionable;
             }}
             dayCellClassNames={(arg) => {
