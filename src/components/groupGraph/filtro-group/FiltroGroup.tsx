@@ -38,22 +38,21 @@ const FiltroGroup: React.FC<FiltroGroupProps> = ({
   // Opciones para la etapa
   const etapaOptions = [
     { value: "LECTIVA", label: "LECTIVA" },
-    { value: "PRODUCTIVA", label: "PRODUCTIVA" },
+    { value: "PRACTICA", label: "PRÁCTICA" },
   ];
 
   // Opciones para la modalidad
   const modalidadOptions = [
     { value: "PRESENCIAL", label: "PRESENCIAL" },
     { value: "VIRTUAL", label: "VIRTUAL" },
-    { value: "HIBRIDA", label: "HÍBRIDA" },
-    { value: "A DISTANCIA TRADICIONAL", label: "A DISTANCIA TRADICIONAL" }
+    { value: "A DISTANCIA", label: "A DISTANCIA" }
   ];
 
   // Opciones para la jornada
   const jornadaOptions = [
-    { value: "DIURNA", label: "MAÑANA" },
+    { value: "DIURNA", label: "DIURNA" },
     { value: "MIXTA", label: "MIXTA" },
-    { value: "NOCTURNA", label: "MADRUGADA" }
+    { value: "NOCTURNA", label: "NOCTURNA" }
   ];
 
   // Opciones para el municipio
@@ -62,16 +61,16 @@ const FiltroGroup: React.FC<FiltroGroupProps> = ({
     { value: "DOSQUEBRADAS", label: "DOSQUEBRADAS" },
     { value: "LA VIRGINIA", label: "LA VIRGINIA" },
     { value: "SANTA ROSA DE CABAL", label: "SANTA ROSA DE CABAL" },
-    { value: "BELÉN DE UMBRÍA", label: "BELÉN DE UMBRÍA" },
-    { value: "GUÁTICA", label: "GUÁTICA" },
+    { value: "BELEN DE UMBRÍA", label: "BELÉN DE UMBRÍA" },
+    { value: "GUATICA", label: "GUÁTICA" },
     { value: "LA CELIA", label: "LA CELIA" },
     { value: "SANTUARIO", label: "SANTUARIO" },
-    { value: "APÍA", label: "APÍA" },
+    { value: "APIA", label: "APÍA" },
     { value: "BALBOA", label: "BALBOA" },
     { value: "PUEBLO RICO", label: "PUEBLO RICO" },
-    { value: "QUINCHÍA", label: "QUINCHÍA" },
+    { value: "QUINCHIA", label: "QUINCHÍA" },
     { value: "MARSELLA", label: "MARSELLA" },
-    { value: "MISTRATÓ", label: "MISTRATÓ" }
+    { value: "MISTRATO", label: "MISTRATÓ" }
   ];
 
   const currentYear = new Date().getFullYear();
