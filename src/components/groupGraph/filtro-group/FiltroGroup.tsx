@@ -286,11 +286,10 @@ const FiltroGroup: React.FC<FiltroGroupProps> = ({
                   type="number"
                   value={filters.año || ""}
                   onChange={handleAñoChange}
-                  placeholder="Ej: 2025"
+                  placeholder="Opcional: deja vacío para ver todos los años"
                   min={(currentYear - 10).toString()}
                   max={(currentYear + 5).toString()}
                   className="w-full"
-                  hint="Opcional: deja vacío para ver todos los años"
                 />
               </div>
 
