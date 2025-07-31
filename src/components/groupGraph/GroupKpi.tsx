@@ -37,6 +37,21 @@ export default function GroupKpi({ filters }: GroupKpiProps) {
     fetchKpiData();
   }, [filters]);
 
+  const renderContent = () => {
+    if (isLoading) {
+      return <h4 className="animate-pulse text-title-sm text-gray-500">Cargando...</h4>;
+    }
+    if (error) {
+      return <div className="flex items-center justify-center text-red-500">{error}</div>;
+    }
+    if (!kpiData?.total_grupo) {
+      return <h4 className="text-gray-500 text-center">No hay datos para mostrar.</h4>;
+    }
+    return <div className="text-title-sm font-bold">
+      {kpiData.total_grupo.toLocaleString()}
+    </div>;
+  };
+
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-6">
       {/* <!-- Metric Item Start --> */}
@@ -50,15 +65,9 @@ export default function GroupKpi({ filters }: GroupKpiProps) {
             <span className="text-sm text-gray-500 dark:text-gray-400">
               Total Grupos de Formación
             </span>
-            <h4 className="mt-2 text-gray-500 text-title-sm dark:text-white/90">
-              {isLoading ? (
-                <span className="animate-pulse">Cargando...</span>
-              ) : error ? (
-                <span className="text-red-500">No se pudieron cargar los datos.</span>
-              ) : (
-                kpiData?.total_grupo?.toLocaleString() || "0"
-              )}
-            </h4>
+            <div className="mt-2  text-gray-800  dark:text-white/90">
+              {renderContent()}
+            </div>
           </div>
         </div>
       </div>
