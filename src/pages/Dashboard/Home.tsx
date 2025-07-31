@@ -4,16 +4,22 @@ import StatisticsChart from "../../components/ecommerce/StatisticsChart";
 import DemographicCard from "../../components/ecommerce/DemographicCard";
 import ModalityChart from "../../components/groupGraph/Modality";
 import { DashboardFilters } from "../../api/grupo.service";
+import FiltroGroup from "../../components/groupGraph/filtro-group/FiltroGroup";
+import { useState } from "react";
 
 export default function Home() {
-  // Filtros para el dashboard
-  const filters: DashboardFilters = {
+  const [filters, setFilters] = useState<DashboardFilters>({
     estado_grupo: "En ejecucion",
-    año: 2025,
-  };
+    año: new Date().getFullYear(),
+  });
 
   return (
     <>
+    <FiltroGroup
+      initialFilters={filters}
+      onFiltersChange={setFilters}
+      className="mb-6"
+    />
       <div className="grid grid-cols-12 gap-4 md:gap-6">
         <div className="col-span-12 space-y-6 xl:col-span-7">
           <EcommerceMetrics />
