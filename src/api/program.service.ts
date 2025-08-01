@@ -91,9 +91,38 @@ const updateProgram = async (
   }
 };
 
+/**
+ * Busca programas de formación basado en una consulta.
+ */
+const searchPrograms = async (
+  query: string,
+  skip: number,
+  limit: number
+): Promise<{ items: Program[]; total_items: number }> => {
+  try {
+    const endpoint = `/programas/programas/search/?query=${query}&skip=${skip}&limit=${limit}`;
+    const data = await apiClient(endpoint, "GET");
+
+    // Aseguramos una respuesta válida para evitar errores en el frontend.
+    if (data && Array.isArray(data.items)) {
+      // Normalizamos la respuesta para que siempre tenga total_items
+      return {
+        items: data.items,
+        total_items: data.total || data.total_items || 0,
+      };
+    }
+    // Si la respuesta no es válida, devolvemos una estructura vacía.
+    return { items: [], total_items: 0 };
+  } catch (error) {
+    console.error("Error al buscar programas:", error);
+    throw error;
+  }
+};
+
 // Exportamos todo en nuestro objeto de servicio.
 export const programService = {
   getAllPrograms,
   createProgram,
   updateProgram,
+  searchPrograms,
 };
