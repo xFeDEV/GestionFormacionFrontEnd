@@ -50,7 +50,7 @@ const navItems: NavItem[] = [
   },
   {
     icon: <BoxCubeIcon />,
-    name: "Programas",
+    name: "Programas de Formación",
     path: "/programas-formacion",
   },
   {
