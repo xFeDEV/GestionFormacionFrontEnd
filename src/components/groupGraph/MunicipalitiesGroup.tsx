@@ -72,7 +72,7 @@ export default function MunicipalitiesGroup({ filters }: MunicipalitiesGroupProp
     },
     plotOptions: {
       bar: {
-        horizontal: false,
+        horizontal: true,
         columnWidth: "39%",
         borderRadius: 5,
         borderRadiusApplication: "end",

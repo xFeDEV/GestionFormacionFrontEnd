@@ -33,11 +33,11 @@ export default function Home() {
         </div>
 
         <div className="col-span-12 space-y-6 xl:col-span-7">
-          <DayGroup filters={filters} />
+          <MunicipalitiesGroup filters={filters} />
         </div>
 
         <div className="col-span-12 xl:col-span-5">
-          <MunicipalitiesGroup filters={filters} />
+          <DayGroup filters={filters} />
         </div>
 
         <div className="col-span-12">
