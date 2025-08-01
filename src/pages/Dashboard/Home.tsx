@@ -7,6 +7,7 @@ import FiltroGroup from "../../components/groupGraph/filtro-group/FiltroGroup";
 import { useState } from "react";
 import LevelGroup from "../../components/groupGraph/LevelGroup";
 import DayGroup from "../../components/groupGraph/DayGroup";
+import MunicipalitiesGroup from "../../components/groupGraph/MunicipalitiesGroup";
 
 export default function Home() {
   const [filters, setFilters] = useState<DashboardFilters>({
@@ -33,6 +34,10 @@ export default function Home() {
 
         <div className="col-span-12 space-y-6 xl:col-span-7">
           <DayGroup filters={filters} />
+        </div>
+
+        <div className="col-span-12 xl:col-span-5">
+          <MunicipalitiesGroup filters={filters} />
         </div>
 
         <div className="col-span-12">

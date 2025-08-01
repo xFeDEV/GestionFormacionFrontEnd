@@ -2,14 +2,14 @@ import { useState, useEffect } from "react";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { useTheme } from "../../context/ThemeContext";
-import { grupoService, DashboardFilters, DistribucionJornada } from "../../api/grupo.service"; // 1. Importar servicio e interfaces
+import { grupoService, DashboardFilters, DistribucionMunicipio } from "../../api/grupo.service"; // 1. Importar servicio e interfaces
 
 // 2. Definir las props que el componente recibirá
-interface DayGroupProps {
+interface MunicipalitiesGroupProps {
   filters: DashboardFilters;
 }
 
-export default function DayGroup({ filters }: DayGroupProps) {
+export default function MunicipalitiesGroup({ filters }: MunicipalitiesGroupProps) {
   const { theme } = useTheme();
 
   // 3. Definir el estado para los datos, la carga y los errores
@@ -36,10 +36,10 @@ export default function DayGroup({ filters }: DayGroupProps) {
       setIsLoading(true);
       setError(null);
       try {
-        const data: DistribucionJornada[] = await grupoService.getDistribucionPorJornada(filters);
+        const data: DistribucionMunicipio[] = await grupoService.getDistribucionPorMunicipio(filters);
 
         // Transformar los datos para el formato que necesita el gráfico de barras
-        const categories = data.map(item => item.jornada);
+        const categories = data.map(item => item.municipio);
         const seriesData = data.map(item => item.cantidad);
 
         setChartData({ 
@@ -50,7 +50,7 @@ export default function DayGroup({ filters }: DayGroupProps) {
           }]
         });
       } catch (err) {
-        console.error("Error al cargar datos de jornada:", err);
+        console.error("Error al cargar datos de municipio:", err);
         setError("No se pudieron cargar los datos.");
       } finally {
         setIsLoading(false);
@@ -168,7 +168,7 @@ export default function DayGroup({ filters }: DayGroupProps) {
     <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white px-5 pt-5 dark:border-gray-800 dark:bg-white/[0.03] sm:px-6 sm:pt-6">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
-          Distribución por Jornada
+          Distribución por Municipio
         </h3>
       </div>
 

@@ -76,7 +76,7 @@ export default function GroupKpi({ filters }: GroupKpiProps) {
       );
     }
     if (showMariko) {
-      return <div className="text-title-sm font-bold text-center">MAMAHUEVO</div>;
+      return <div className="text-title-sm font-bold text-center">PRINCESO</div>;
     }
     return null;
   };
