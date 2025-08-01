@@ -3,6 +3,7 @@ import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { useTheme } from "../../context/ThemeContext";
 import { grupoService, DashboardFilters, DistribucionModalidad } from "../../api/grupo.service"; // 1. Importar servicio e interfaces
+import useMediaQuery from "../../hooks/useMediaQuery";
 
 // 2. Definir las props que el componente recibirá
 interface ModalityChartProps {
@@ -11,6 +12,7 @@ interface ModalityChartProps {
 
 export default function ModalityChart({ filters }: ModalityChartProps) {
   const { theme } = useTheme();
+  const isMobile = useMediaQuery("(max-width: 768px)");
 
   // 3. Definir el estado para los datos, la carga y los errores
   const [chartData, setChartData] = useState<{ series: number[]; labels: string[] }>({
@@ -113,15 +115,15 @@ export default function ModalityChart({ filters }: ModalityChartProps) {
           options={options}
           series={chartData.series} // Usar series del estado
           type="pie"
-          height={407}
+          height={isMobile ? 360 : 407} 
         />
       </div>
     );
   };
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white px-5 pt-5 dark:border-gray-800 dark:bg-white/[0.03] sm:px-6 sm:pt-6">
-      <div className="flex items-center justify-between">
+    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white pt-5 dark:border-gray-800 dark:bg-white/[0.03] sm:px-6 sm:pt-6">
+      <div className="flex items-center justify-between px-5">
         <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
           Distribución por Modalidad
         </h3>

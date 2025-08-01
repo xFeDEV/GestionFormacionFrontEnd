@@ -3,6 +3,7 @@ import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { useTheme } from "../../context/ThemeContext";
 import { grupoService, DashboardFilters, DistribucionJornada } from "../../api/grupo.service"; // 1. Importar servicio e interfaces
+import useMediaQuery from "../../hooks/useMediaQuery";
 
 // 2. Definir las props que el componente recibirá
 interface DayGroupProps {
@@ -11,6 +12,7 @@ interface DayGroupProps {
 
 export default function DayGroup({ filters }: DayGroupProps) {
   const { theme } = useTheme();
+  const isMobile = useMediaQuery("(max-width: 768px)");
 
   // 3. Definir el estado para los datos, la carga y los errores
   const [chartData, setChartData] = useState<{ series: { name: string; data: number[] }[]; categories: string[] }>({
@@ -152,13 +154,13 @@ export default function DayGroup({ filters }: DayGroupProps) {
       return <div className="flex h-[250px] items-center justify-center text-gray-500">No hay datos para mostrar.</div>;
     }
     return (
-      <div className="-ml-5 min-w-[650px] xl:min-w-full pl-2">
+      <div className="-ml-5 min-w-[400px] xl:min-w-full pl-2">
         <Chart 
           key={theme}
           options={options} 
           series={chartData.series} // Usar series del estado
           type="bar" 
-          height={396} 
+          height={isMobile ? 250 : 392} 
         />
       </div>
     );
