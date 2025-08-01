@@ -1,6 +1,4 @@
 import GroupKpi from "../../components/groupGraph/GroupKpi";
-import StatisticsChart from "../../components/ecommerce/StatisticsChart";
-import DemographicCard from "../../components/ecommerce/DemographicCard";
 import ModalityChart from "../../components/groupGraph/Modality";
 import { DashboardFilters } from "../../api/grupo.service";
 import FiltroGroup from "../../components/groupGraph/filtro-group/FiltroGroup";
