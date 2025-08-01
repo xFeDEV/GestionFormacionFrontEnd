@@ -1,11 +1,11 @@
 import GroupKpi from "../../components/groupGraph/GroupKpi";
-import MonthlySalesChart from "../../components/ecommerce/MonthlySalesChart";
 import StatisticsChart from "../../components/ecommerce/StatisticsChart";
 import DemographicCard from "../../components/ecommerce/DemographicCard";
 import ModalityChart from "../../components/groupGraph/Modality";
 import { DashboardFilters } from "../../api/grupo.service";
 import FiltroGroup from "../../components/groupGraph/filtro-group/FiltroGroup";
 import { useState } from "react";
+import LevelGroup from "../../components/groupGraph/LevelGroup";
 
 export default function Home() {
   const [filters, setFilters] = useState<DashboardFilters>({
@@ -23,7 +23,7 @@ export default function Home() {
         <div className="col-span-12 space-y-6 xl:col-span-7">
           <GroupKpi filters={filters} />
 
-          <MonthlySalesChart />
+          <LevelGroup filters={filters} />
         </div>
 
         <div className="col-span-12 xl:col-span-5">
