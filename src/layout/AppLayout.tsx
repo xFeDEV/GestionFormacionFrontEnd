@@ -6,11 +6,11 @@ import Backdrop from "./Backdrop";
 import AppSidebar from "./AppSidebar";
 import { useEffect } from "react";
 import { useLocation } from "react-router";
-import { navItems, othersItems } from "./AppSidebar";
+import { navItems } from "./AppSidebar";
 
 // Crear el mapa de títulos para búsqueda rápida
 const routeTitles = new Map<string, string>();
-[...navItems, ...othersItems].forEach((item) => {
+navItems.forEach((item) => {
   if (item.path) routeTitles.set(item.path, item.name);
   if (item.subItems) {
     item.subItems.forEach((subItem) => {
