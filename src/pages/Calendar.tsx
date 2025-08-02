@@ -289,6 +289,77 @@ const Calendar: React.FC = () => {
     openModal();
   };
 
+  // Función auxiliar para cargar datos del evento de forma secuencial
+  const cargarDatosEvento = async (programacionDetalle: any) => {
+    try {
+      // Limpiar estados anteriores
+      setSelectedFicha(null);
+      setSelectedCompetencia(null);
+      setSelectedResultado(null);
+      setCompetencias([]);
+      setResultados([]);
+
+      // 1. Primero establecer la ficha
+      if (programacionDetalle.cod_ficha) {
+        const fichaOption = fichasDisponibles.find(f => f.value === programacionDetalle.cod_ficha);
+        if (fichaOption) {
+          setSelectedFicha(fichaOption);
+          
+          // 2. Cargar competencias para esta ficha
+          if (fichaOption.grupo?.cod_programa && fichaOption.grupo?.la_version) {
+            try {
+              const competenciasData = await programacionService.getCompetenciasPorPrograma(
+                fichaOption.grupo.cod_programa,
+                fichaOption.grupo.la_version
+              );
+              
+              const competenciaOptions = competenciasData.map((competencia) => ({
+                value: competencia.cod_competencia,
+                label: competencia.nombre,
+              }));
+              
+              setCompetencias(competenciaOptions);
+              
+              // 3. Establecer la competencia seleccionada
+              if (programacionDetalle.cod_competencia) {
+                const competenciaOption = competenciaOptions.find(c => c.value === programacionDetalle.cod_competencia);
+                if (competenciaOption) {
+                  setSelectedCompetencia(competenciaOption);
+                  
+                  // 4. Cargar resultados para esta competencia
+                  try {
+                    const resultadosData = await programacionService.getResultadosPorCompetencia(competenciaOption.value);
+                    
+                    const resultadoOptions = resultadosData.map((resultado) => ({
+                      value: resultado.cod_resultado,
+                      label: resultado.nombre,
+                    }));
+                    
+                    setResultados(resultadoOptions);
+                    
+                    // 5. Establecer el resultado seleccionado
+                    if (programacionDetalle.cod_resultado) {
+                      const resultadoOption = resultadoOptions.find(r => r.value === programacionDetalle.cod_resultado);
+                      if (resultadoOption) {
+                        setSelectedResultado(resultadoOption);
+                      }
+                    }
+                  } catch (error) {
+                    console.error("Error al cargar resultados:", error);
+                  }
+                }
+              }
+            } catch (error) {
+              console.error("Error al cargar competencias:", error);
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Error al cargar datos del evento:", error);
+    }
+  };
+
   const handleEventClick = async (clickInfo: EventClickArg) => {
     const event = clickInfo.event;
     const idProgramacion = event.id;
@@ -303,24 +374,11 @@ const Calendar: React.FC = () => {
       setEventStartTime(programacionDetalle.hora_inicio || "");
       setEventEndTime(programacionDetalle.hora_fin || "");
       
-      // Establecer ficha en los selects
-      if (programacionDetalle.cod_ficha) {
-        const fichaOption = fichasDisponibles.find(f => f.value === programacionDetalle.cod_ficha);
-        setSelectedFicha(fichaOption || null);
-      }
-      
-      if (programacionDetalle.cod_competencia) {
-        const competenciaOption = competencias.find(c => c.value === programacionDetalle.cod_competencia);
-        setSelectedCompetencia(competenciaOption || null);
-      }
-      
-      if (programacionDetalle.cod_resultado) {
-        const resultadoOption = resultados.find(r => r.value === programacionDetalle.cod_resultado);
-        setSelectedResultado(resultadoOption || null);
-      }
+      // Cargar datos de forma secuencial para evitar problemas de sincronización
+      await cargarDatosEvento(programacionDetalle);
       
       openModal();
-        } catch (error) {
+    } catch (error) {
       console.error("Error al cargar detalle de la programación:", error);
       // Fallback al comportamiento anterior
       setSelectedEvent(event as unknown as CalendarEvent);
@@ -363,6 +421,28 @@ const Calendar: React.FC = () => {
     const horaInicio = new Date(`1970-01-01T${eventStartTime}`);
     const horaFin = new Date(`1970-01-01T${eventEndTime}`);
     const horasProgramadas = Math.abs(horaFin.getTime() - horaInicio.getTime()) / (1000 * 60 * 60);
+
+    // Pre-validación: verificar cruces de horarios
+    try {
+      const validacionData = {
+        id_instructor: instructorSeleccionado.value,
+        fecha_programada: eventStartDate,
+        hora_inicio: eventStartTime,
+        hora_fin: eventEndTime,
+        id_programacion_actual: selectedEvent?.id ? parseInt(selectedEvent.id) : undefined
+      };
+
+      const validacionResponse = await programacionService.validarCruceProgramacion(validacionData);
+      
+      if (validacionResponse.conflicto) {
+        alert(`❌ Error de programación\n\n${validacionResponse.mensaje || 'Existe un conflicto de horarios con otra programación existente.'}\n\nPor favor, verifica las horas y fechas seleccionadas.`);
+        return; // Detener la ejecución si hay conflicto
+      }
+    } catch (error) {
+      console.error("Error al validar cruce de programación:", error);
+      alert("Error al validar la programación. Por favor, intenta nuevamente.");
+      return;
+    }
 
     try {
       if (selectedEvent && selectedEvent.id) {
@@ -908,32 +988,66 @@ const renderEventContent = (eventInfo: any) => {
   const programacion = eventInfo.event.extendedProps?.programacion;
   const colorClass = `fc-bg-${eventInfo.event.extendedProps.calendar.toLowerCase()}`;
   
+  // Función para formatear la hora de 24h a 12h con AM/PM
+  const formatearHora = (hora: string) => {
+    if (!hora) return '';
+    const [horas, minutos] = hora.split(':');
+    const horaNum = parseInt(horas);
+    const ampm = horaNum >= 12 ? 'PM' : 'AM';
+    const hora12 = horaNum === 0 ? 12 : horaNum > 12 ? horaNum - 12 : horaNum;
+    return `${hora12}:${minutos}${ampm}`;
+  };
+
+  // Crear horario completo formateado
+  const horarioCompleto = programacion?.hora_inicio && programacion?.hora_fin
+    ? `${formatearHora(programacion.hora_inicio)} - ${formatearHora(programacion.hora_fin)}`
+    : eventInfo.timeText || 'Sin horario';
+
+  // Obtener nombre corto de competencia (primeras palabras)
+  const competenciaCorta = programacion?.nombre_competencia 
+    ? programacion.nombre_competencia.split(' ').slice(0, 3).join(' ')
+    : '';
+
   return (
     <div
-      className={`event-fc-color fc-event-main ${colorClass} w-full h-full min-h-[20px] p-1 rounded-sm cursor-pointer hover:opacity-80 transition-opacity overflow-hidden`}
+      className={`event-fc-color fc-event-main ${colorClass} w-full h-full min-h-[28px] p-1.5 rounded-md cursor-pointer hover:opacity-90 transition-all duration-200 overflow-hidden shadow-sm`}
       style={{
-        fontSize: '11px',
-        lineHeight: '1.2',
+        fontSize: '12px',
+        lineHeight: '1.3',
         maxWidth: '100%',
         wordBreak: 'break-word',
         hyphens: 'auto'
       }}
     >
-      <div className="flex flex-col h-full justify-center">
-        {/* Ficha */}
-        <div className="font-semibold text-xs truncate">
-          {programacion?.cod_ficha ? `${programacion.cod_ficha}` : 'Sin ficha'}
+      <div className="flex flex-col h-full justify-start space-y-0.5">
+        {/* Primera línea: Ficha y Horas */}
+        <div className="flex items-center justify-between">
+          <div className="font-bold text-sm truncate flex-1">
+            {programacion?.cod_ficha ? `Ficha ${programacion.cod_ficha}` : 'Sin ficha'}
+          </div>
+          {programacion?.horas_programadas && (
+            <div className="text-xs font-medium bg-white/20 px-1.5 py-0.5 rounded text-right ml-1 shrink-0">
+              {programacion.horas_programadas}h
+            </div>
+          )}
         </div>
         
-        {/* Horario */}
-        <div className="text-[10px] opacity-90 truncate">
-          {eventInfo.timeText || `${programacion?.hora_inicio || ''} - ${programacion?.hora_fin || ''}`}
+        {/* Segunda línea: Horario completo */}
+        <div className="text-xs font-medium opacity-95 truncate">
+          🕐 {horarioCompleto}
         </div>
         
-        {/* Horas programadas (solo si hay espacio) */}
-        {programacion?.horas_programadas && (
-          <div className="text-[9px] opacity-75 truncate hidden sm:block">
-            {programacion.horas_programadas}h
+        {/* Tercera línea: Competencia (si hay espacio) */}
+        {competenciaCorta && (
+          <div className="text-[11px] opacity-85 truncate hidden sm:block">
+            📚 {competenciaCorta}
+          </div>
+        )}
+        
+        {/* Cuarta línea: Información adicional en eventos más grandes */}
+        {programacion?.nombre_resultado && (
+          <div className="text-[10px] opacity-75 truncate hidden md:block">
+            ✓ {programacion.nombre_resultado.split(' ').slice(0, 4).join(' ')}
           </div>
         )}
       </div>

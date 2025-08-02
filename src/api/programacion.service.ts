@@ -55,6 +55,35 @@ export interface UpdateProgramacionPayload {
   cod_resultado?: number;
 }
 
+export interface ValidarCrucePayload {
+  id_instructor: number;
+  fecha_programada: string;
+  hora_inicio: string;
+  hora_fin: string;
+  id_programacion_actual?: number; // Para excluir en actualizaciones
+}
+
+export interface ValidarCruceResponse {
+  conflicto: boolean;
+  mensaje?: string;
+}
+
+/**
+ * Función para validar si existe un cruce de horarios antes de crear/actualizar una programación
+ * @param data - Datos de la programación a validar
+ * @returns Promise con la respuesta de validación
+ */
+const validarCruceProgramacion = async (data: ValidarCrucePayload): Promise<ValidarCruceResponse> => {
+  try {
+    const endpoint = "/programacion/validar-cruce";
+    const response = await apiClient(endpoint, "POST", { body: data });
+    return response;
+  } catch (error) {
+    console.error("Error al validar cruce de programación:", error);
+    throw error;
+  }
+};
+
 /**
  * Función para obtener las programaciones por código de ficha
  * @param codFicha - Código de la ficha para filtrar las programaciones
@@ -191,6 +220,7 @@ export const programacionService = {
   getProgramacionDetalle,
   getCompetenciasPorPrograma,
   getResultadosPorCompetencia,
+  validarCruceProgramacion,
   crearProgramacion,
   actualizarProgramacion,
   eliminarProgramacion,
