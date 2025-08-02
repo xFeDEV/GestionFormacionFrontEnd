@@ -1,4 +1,4 @@
-import { apiClient } from './apiClient';
+import { apiClient } from "./apiClient";
 
 // INTERFAZ DE DATOS (cómo se ven los datos que recibimos)
 export interface Program {
@@ -7,9 +7,6 @@ export interface Program {
   nombre: string;
   horas_lectivas: number;
   horas_productivas: number;
-  // Añadimos opcionalmente otros campos que puedan venir
-  id?: number;
-  estado?: boolean;
 }
 
 // INTERFAZ PARA CREAR (la forma exacta de los datos para enviar al crear)
@@ -28,14 +25,29 @@ export interface UpdateProgramPayload {
 }
 
 /**
- * Obtiene todos los programas de formación desde el backend.
+ * Obtiene una lista paginada de programas desde el backend.
  */
-const getAllPrograms = async (): Promise<Program[]> => {
+const getAllPrograms = async (
+  skip: number,
+  limit: number
+): Promise<{ items: Program[]; total_items: number }> => {
   try {
-    const programs = await apiClient('/programas/programas/', 'GET');
-    return programs;
+    // Apuntamos al endpoint correcto con los parámetros de paginación
+    const endpoint = `/programas/programas/?skip=${skip}&limit=${limit}`;
+    const data = await apiClient(endpoint, "GET");
+
+    // Aseguramos una respuesta válida para evitar errores en el frontend.
+    if (data && Array.isArray(data.items)) {
+      // Normalizamos la respuesta para que siempre tenga total_items
+      return {
+        items: data.items,
+        total_items: data.total || data.total_items || 0,
+      };
+    }
+    // Si la respuesta no es válida, devolvemos una estructura vacía.
+    return { items: [], total_items: 0 };
   } catch (error) {
-    console.error("Error al obtener los programas:", error);
+    console.error("Error al obtener los programas paginados:", error);
     throw error;
   }
 };
@@ -43,10 +55,13 @@ const getAllPrograms = async (): Promise<Program[]> => {
 /**
  * Crea un nuevo programa de formación.
  */
-const createProgram = async (payload: CreateProgramPayload): Promise<Program> => {
+const createProgram = async (
+  payload: CreateProgramPayload
+): Promise<Program> => {
   try {
-    // Usamos el endpoint de creación y enviamos el payload con la estructura correcta.
-    const newProgram = await apiClient('/programas/programas/', 'POST', { body: payload });
+    const newProgram = await apiClient("/programas/programas/", "POST", {
+      body: payload,
+    });
     return newProgram;
   } catch (error) {
     console.error("Error al crear el programa:", error);
@@ -57,13 +72,49 @@ const createProgram = async (payload: CreateProgramPayload): Promise<Program> =>
 /**
  * Actualiza las horas de un programa existente.
  */
-const updateProgram = async (programId: number, payload: UpdateProgramPayload): Promise<Program> => {
+const updateProgram = async (
+  programId: number,
+  payload: UpdateProgramPayload
+): Promise<Program> => {
   try {
-    // Usamos el endpoint de actualización y enviamos solo las horas.
-    const updatedProgram = await apiClient(`/programas/programas/${programId}`, 'PUT', { body: payload });
+    const updatedProgram = await apiClient(
+      `/programas/programas/${programId}`,
+      "PUT",
+      {
+        body: payload,
+      }
+    );
     return updatedProgram;
   } catch (error) {
     console.error("Error al actualizar el programa:", error);
+    throw error;
+  }
+};
+
+/**
+ * Busca programas de formación basado en una consulta.
+ */
+const searchPrograms = async (
+  query: string,
+  skip: number,
+  limit: number
+): Promise<{ items: Program[]; total_items: number }> => {
+  try {
+    const endpoint = `/programas/programas/search/?query=${query}&skip=${skip}&limit=${limit}`;
+    const data = await apiClient(endpoint, "GET");
+
+    // Aseguramos una respuesta válida para evitar errores en el frontend.
+    if (data && Array.isArray(data.items)) {
+      // Normalizamos la respuesta para que siempre tenga total_items
+      return {
+        items: data.items,
+        total_items: data.total || data.total_items || 0,
+      };
+    }
+    // Si la respuesta no es válida, devolvemos una estructura vacía.
+    return { items: [], total_items: 0 };
+  } catch (error) {
+    console.error("Error al buscar programas:", error);
     throw error;
   }
 };
@@ -73,4 +124,5 @@ export const programService = {
   getAllPrograms,
   createProgram,
   updateProgram,
+  searchPrograms,
 };

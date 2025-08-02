@@ -16,13 +16,17 @@ const ProgramsTable: React.FC = () => {
   const currentUser = useAuth();
   const allowedRoles = [1, 2]; // 1: superadmin, 2: admin
 
-  // --- ESTADO DEL COMPONENTE ---
-  const [programs, setPrograms] = useState<Program[]>([]);
+  // --- ESTADO DEL COMPONENTE (MODIFICADO PARA PAGINACIÓN DEL SERVIDOR) ---
+  const [programasData, setProgramasData] = useState<{
+    items: Program[];
+    total_items: number;
+  }>({ items: [], total_items: 0 });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   // Estado para la búsqueda y paginación
-  const [filtroNombre, setFiltroNombre] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [paginaActual, setPaginaActual] = useState(1);
   const programasPorPagina = 10;
 
@@ -31,19 +35,30 @@ const ProgramsTable: React.FC = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedProgram, setSelectedProgram] = useState<Program | undefined>();
 
-  // Referencia para controlar el scroll y evitar saltos en la paginación
+  // Referencia y hook para responsividad
   const gestionContainerRef = useRef<HTMLDivElement>(null);
-
-  // Hook para detectar si estamos en una pantalla móvil
   const isMobile = useMediaQuery("(max-width: 768px)");
 
-  // --- LÓGICA DE DATOS ---
+  // --- LÓGICA DE DATOS (MODIFICADA PARA PAGINACIÓN DEL SERVIDOR) ---
   const fetchPrograms = async () => {
+    setLoading(true);
+    setError(null);
     try {
-      setLoading(true);
-      setError(null);
-      const data = await programService.getAllPrograms();
-      setPrograms(data);
+      const skip = (paginaActual - 1) * programasPorPagina;
+
+      // Decidir si buscar o listar todos los programas
+      let data;
+      if (debouncedSearchTerm.trim()) {
+        data = await programService.searchPrograms(
+          debouncedSearchTerm,
+          skip,
+          programasPorPagina
+        );
+      } else {
+        data = await programService.getAllPrograms(skip, programasPorPagina);
+      }
+
+      setProgramasData(data);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Error al cargar los programas"
@@ -54,35 +69,24 @@ const ProgramsTable: React.FC = () => {
     }
   };
 
+  // useEffect para implementar debounce en el término de búsqueda
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+      // Resetear la página a 1 cuando cambie el término de búsqueda
+      if (searchTerm !== debouncedSearchTerm) {
+        setPaginaActual(1);
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm, debouncedSearchTerm]);
+
   useEffect(() => {
     fetchPrograms();
-  }, []);
+  }, [paginaActual, debouncedSearchTerm]);
 
-  // useEffect para controlar el scroll y evitar saltos en la paginación
-  useEffect(() => {
-    if (gestionContainerRef.current && paginaActual > 1) {
-      gestionContainerRef.current.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
-    }
-  }, [paginaActual]);
-
-  // --- DATOS DERIVADOS (Filtrado y Paginación) ---
-  const programasFiltrados = programs.filter((program) =>
-    program.nombre.toLowerCase().includes(filtroNombre.toLowerCase())
-  );
-
-  const totalPaginas = Math.ceil(
-    programasFiltrados.length / programasPorPagina
-  );
-
-  const programasPaginados = programasFiltrados.slice(
-    (paginaActual - 1) * programasPorPagina,
-    paginaActual * programasPorPagina
-  );
-
-  // --- MANEJADORES DE EVENTOS (HANDLERS) ---
+  // --- MANEJADORES DE EVENTOS ---
   const handleEditClick = (program: Program) => {
     setSelectedProgram(program);
     setIsEditModalOpen(true);
@@ -115,41 +119,32 @@ const ProgramsTable: React.FC = () => {
     }
   };
 
-  // --- FUNCIÓN AUXILIAR PARA VENTANA DESLIZANTE DE PAGINACIÓN ---
+  // --- DATOS DERIVADOS ---
+  const totalPaginas = Math.ceil(
+    programasData.total_items / programasPorPagina
+  );
+
+  // --- FUNCIÓN AUXILIAR PARA RENDERIZAR LA PAGINACIÓN ---
   const generatePaginationItems = () => {
     const items: (number | string)[] = [];
     const totalPages = totalPaginas;
     const currentPage = paginaActual;
-
     if (totalPages <= 7) {
-      for (let i = 1; i <= totalPages; i++) {
-        items.push(i);
-      }
+      for (let i = 1; i <= totalPages; i++) items.push(i);
     } else {
       items.push(1);
-
-      if (currentPage > 4) {
-        items.push("...");
-      }
-
+      if (currentPage > 4) items.push("...");
       const startPage = Math.max(2, currentPage - 2);
       const endPage = Math.min(totalPages - 1, currentPage + 2);
-
       for (let i = startPage; i <= endPage; i++) {
-        if (i !== 1 && i !== totalPages) {
-          items.push(i);
-        }
+        if (i !== 1 && i !== totalPages) items.push(i);
       }
-
-      if (currentPage < totalPages - 3) {
-        items.push("...");
-      }
-
+      if (currentPage < totalPages - 3) items.push("...");
       items.push(totalPages);
     }
-
     return items;
   };
+
   return (
     <div
       ref={gestionContainerRef}
@@ -159,14 +154,13 @@ const ProgramsTable: React.FC = () => {
         Gestión de Programas
       </h3>
 
-      {/* Barra de Búsqueda y Botón Crear */}
       <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center mb-5">
         <div className="relative w-full sm:w-80">
           <input
             type="text"
             placeholder="Buscar por nombre de programa..."
-            value={filtroNombre}
-            onChange={(e) => setFiltroNombre(e.target.value)}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
           />
         </div>
@@ -194,7 +188,6 @@ const ProgramsTable: React.FC = () => {
 
       {error && <div className="text-red-500 text-center mb-4">{error}</div>}
 
-      {/* Tabla de Programas */}
       <div className="rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
         <div className="max-w-full overflow-x-auto">
           <table className="min-w-full">
@@ -241,7 +234,7 @@ const ProgramsTable: React.FC = () => {
                     </div>
                   </td>
                 </tr>
-              ) : programasPaginados.length === 0 ? (
+              ) : programasData.items.length === 0 ? (
                 <tr>
                   <td
                     colSpan={
@@ -255,8 +248,8 @@ const ProgramsTable: React.FC = () => {
                   </td>
                 </tr>
               ) : (
-                programasPaginados.map((program) => (
-                  <tr key={program.cod_programa}>
+                programasData.items.map((program) => (
+                  <tr key={`${program.cod_programa}-${program.la_version}`}>
                     <td className="px-5 py-4 text-gray-800 dark:text-white/90">
                       {program.nombre}
                     </td>
@@ -306,10 +299,8 @@ const ProgramsTable: React.FC = () => {
         </div>
       </div>
 
-      {/* Paginación Responsiva */}
       {!loading && !error && totalPaginas > 1 && (
         <div className="flex items-center justify-between px-4 py-3 mt-4 bg-white border-t border-gray-200 sm:px-6 dark:bg-gray-900 dark:border-gray-800">
-          {/* Información de resultados - Solo en Desktop */}
           {!isMobile && (
             <div>
               <p className="text-sm text-gray-700 dark:text-gray-400">
@@ -321,17 +312,15 @@ const ProgramsTable: React.FC = () => {
                 <span className="font-medium">
                   {Math.min(
                     paginaActual * programasPorPagina,
-                    programasFiltrados.length
+                    programasData.total_items
                   )}
                 </span>{" "}
                 de{" "}
-                <span className="font-medium">{programasFiltrados.length}</span>{" "}
+                <span className="font-medium">{programasData.total_items}</span>{" "}
                 resultados
               </p>
             </div>
           )}
-
-          {/* Controles de Paginación */}
           <div className={isMobile ? "w-full" : ""}>
             <nav
               className={`inline-flex -space-x-px rounded-md shadow-sm isolate ${
@@ -339,7 +328,6 @@ const ProgramsTable: React.FC = () => {
               }`}
               aria-label="Pagination"
             >
-              {/* Botón Anterior */}
               <button
                 onClick={() => handleCambiarPagina(paginaActual - 1)}
                 disabled={paginaActual === 1}
@@ -349,10 +337,7 @@ const ProgramsTable: React.FC = () => {
               >
                 {isMobile ? "◀" : "Anterior"}
               </button>
-
-              {/* Paginación Desktop vs Mobile */}
               {isMobile ? (
-                /* Versión Mobile: Indicador simple de página */
                 <div className="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 flex-1 justify-center">
                   <span className="font-medium text-[#39A900]">
                     {paginaActual}
@@ -361,7 +346,6 @@ const ProgramsTable: React.FC = () => {
                   <span className="font-medium">{totalPaginas}</span>
                 </div>
               ) : (
-                /* Versión Desktop: Paginación numérica completa */
                 generatePaginationItems().map((item, index) => {
                   if (item === "...") {
                     return (
@@ -373,7 +357,6 @@ const ProgramsTable: React.FC = () => {
                       </span>
                     );
                   }
-
                   const numeroPage = item as number;
                   const isActive = numeroPage === paginaActual;
                   return (
@@ -391,8 +374,6 @@ const ProgramsTable: React.FC = () => {
                   );
                 })
               )}
-
-              {/* Botón Siguiente */}
               <button
                 onClick={() => handleCambiarPagina(paginaActual + 1)}
                 disabled={paginaActual === totalPaginas}
@@ -404,26 +385,22 @@ const ProgramsTable: React.FC = () => {
               </button>
             </nav>
           </div>
-
-          {/* Información de resultados compacta - Solo en Mobile */}
           {isMobile && (
             <div className="mt-3 text-center">
               <p className="text-xs text-gray-500 dark:text-gray-400">
-                {programasFiltrados.length} resultado
-                {programasFiltrados.length !== 1 ? "s" : ""}
+                {programasData.total_items} resultado
+                {programasData.total_items !== 1 ? "s" : ""}
               </p>
             </div>
           )}
         </div>
       )}
 
-      {/* Renderizado de Modales */}
       <CreateProgramModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         onSave={handleCreateSave}
       />
-
       <EditProgramModal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
