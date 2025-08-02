@@ -545,6 +545,16 @@ const Calendar: React.FC = () => {
 
   return (
     <>
+      {/* Título principal de la página */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+          Programacion de Instructores
+        </h1>
+        <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+          Gestiona y organiza las programaciones académicas de los instructores
+        </p>
+      </div>
+
       {/* Sección del buscador de instructores - Solo visible para coordinadores y superadmin */}
       {user && user.nombre_rol?.toLowerCase() !== 'instructor' && (
         <div className="mb-6 rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
