@@ -20,6 +20,12 @@ const CargaMasivaPage: React.FC = () => {
   const [df14Error, setDf14Error] = useState<string | null>(null);
   const [isDf14Loading, setIsDf14Loading] = useState<boolean>(false);
 
+  // Estados para el archivo Juicios Evaluativos
+  const [selectedJuiciosFile, setSelectedJuiciosFile] = useState<File | null>(null);
+  const [juiciosResponse, setJuiciosResponse] = useState<any>(null);
+  const [juiciosError, setJuiciosError] = useState<string | null>(null);
+  const [isJuiciosLoading, setIsJuiciosLoading] = useState<boolean>(false);
+
   // Configuración de useDropzone para PE-04
   const onDropPe04 = useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles.length > 0) {
@@ -70,6 +76,31 @@ const CargaMasivaPage: React.FC = () => {
     maxFiles: 1,
   });
 
+  // Configuración de useDropzone para Juicios Evaluativos
+  const onDropJuicios = useCallback((acceptedFiles: File[]) => {
+    if (acceptedFiles.length > 0) {
+      setSelectedJuiciosFile(acceptedFiles[0]);
+      // Limpiar estados anteriores
+      setJuiciosError(null);
+      setJuiciosResponse(null);
+    }
+  }, []);
+
+  const {
+    getRootProps: getJuiciosRootProps,
+    getInputProps: getJuiciosInputProps,
+    isDragActive: isJuiciosDragActive,
+  } = useDropzone({
+    onDrop: onDropJuicios,
+    accept: {
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [
+        ".xlsx",
+      ],
+    },
+    multiple: false,
+    maxFiles: 1,
+  });
+
   // Función para manejar la subida del archivo PE-04
   const handlePe04Upload = async () => {
     if (!selectedPe04File) {
@@ -84,6 +115,8 @@ const CargaMasivaPage: React.FC = () => {
     try {
       const response = await fileService.uploadExcelFile(selectedPe04File);
       setPe04Response(response);
+      // Limpiar el archivo seleccionado después de una carga exitosa
+      setSelectedPe04File(null);
     } catch (err) {
       if (err instanceof Error) {
         setPe04Error(err.message);
@@ -109,6 +142,8 @@ const CargaMasivaPage: React.FC = () => {
     try {
       const response = await fileService.uploadDf14Excel(selectedDf14File);
       setDf14Response(response);
+      // Limpiar el archivo seleccionado después de una carga exitosa
+      setSelectedDf14File(null);
     } catch (err) {
       if (err instanceof Error) {
         setDf14Error(err.message);
@@ -117,6 +152,33 @@ const CargaMasivaPage: React.FC = () => {
       }
     } finally {
       setIsDf14Loading(false);
+    }
+  };
+
+  // Función para manejar la subida del archivo Juicios Evaluativos
+  const handleJuiciosUpload = async () => {
+    if (!selectedJuiciosFile) {
+      setJuiciosError("Por favor, selecciona un archivo antes de subirlo.");
+      return;
+    }
+
+    setIsJuiciosLoading(true);
+    setJuiciosError(null);
+    setJuiciosResponse(null);
+
+    try {
+      const response = await fileService.uploadJuiciosEvaluativosExcel(selectedJuiciosFile);
+      setJuiciosResponse(response);
+      // Limpiar el archivo seleccionado después de una carga exitosa
+      setSelectedJuiciosFile(null);
+    } catch (err) {
+      if (err instanceof Error) {
+        setJuiciosError(err.message);
+      } else {
+        setJuiciosError("Ocurrió un error inesperado al subir el archivo.");
+      }
+    } finally {
+      setIsJuiciosLoading(false);
     }
   };
 
@@ -132,6 +194,13 @@ const CargaMasivaPage: React.FC = () => {
     setSelectedDf14File(null);
     setDf14Error(null);
     setDf14Response(null);
+  };
+
+  // Función para eliminar el archivo Juicios Evaluativos seleccionado
+  const handleRemoveJuiciosFile = () => {
+    setSelectedJuiciosFile(null);
+    setJuiciosError(null);
+    setJuiciosResponse(null);
   };
 
   return (
@@ -394,6 +463,137 @@ const CargaMasivaPage: React.FC = () => {
                 variant="error"
                 title="Errores encontrados en DF-14"
                 message={df14Response.errores.join("\n• ")}
+              />
+            )}
+        </div>
+      </ComponentCard>
+
+      {/* Tarjeta para Juicios Evaluativos */}
+      <ComponentCard
+        title="Carga de Juicios Evaluativos"
+        desc="Selecciona el archivo Juicios Evaluativos.xlsx para cargar los datos de evaluaciones y juicios evaluativos"
+      >
+        <div className="space-y-6">
+          {/* Zona de dropzone para Juicios Evaluativos */}
+          <div
+            {...getJuiciosRootProps()}
+            className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
+              isJuiciosDragActive
+                ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+                : "border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500"
+            }`}
+          >
+            <input {...getJuiciosInputProps()} />
+            <div className="flex flex-col items-center justify-center space-y-4">
+              <FileIcon className="w-12 h-12 text-gray-400" />
+              {isJuiciosDragActive ? (
+                <p className="text-lg text-blue-600 dark:text-blue-400">
+                  Suelta el archivo aquí...
+                </p>
+              ) : (
+                <div className="space-y-2">
+                  <p className="text-lg text-gray-600 dark:text-gray-300">
+                    Arrastra y suelta el archivo <strong>Juicios Evaluativos.xlsx</strong>{" "}
+                    aquí
+                  </p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    o haz clic para seleccionar el archivo
+                  </p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500">
+                    Solo se permiten archivos .xlsx
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Archivo Juicios Evaluativos seleccionado */}
+          {selectedJuiciosFile && (
+            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <FileIcon className="w-8 h-8 text-green-500" />
+                  <div>
+                    <p className="font-medium text-gray-900 dark:text-gray-100">
+                      {selectedJuiciosFile.name}
+                    </p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      {(selectedJuiciosFile.size / 1024 / 1024).toFixed(2)} MB
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  variant="outline"
+                  onClick={handleRemoveJuiciosFile}
+                  className="p-2"
+                  disabled={isJuiciosLoading}
+                >
+                  <TrashBinIcon className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Botón de subida para Juicios Evaluativos */}
+          <div className="flex justify-center">
+            <Button
+              onClick={handleJuiciosUpload}
+              disabled={!selectedJuiciosFile || isJuiciosLoading}
+              className="px-6 py-3"
+            >
+              {isJuiciosLoading ? (
+                <div className="flex items-center space-x-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  <span>Subiendo archivo...</span>
+                </div>
+              ) : (
+                <div className="flex items-center space-x-2">
+                  <DownloadIcon className="w-4 h-4" />
+                  <span>Subir Archivo Juicios Evaluativos</span>
+                </div>
+              )}
+            </Button>
+          </div>
+
+          {/* Indicador de carga para Juicios Evaluativos */}
+          {isJuiciosLoading && (
+            <div className="text-center">
+              <div className="inline-flex items-center space-x-2 text-blue-600 dark:text-blue-400">
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-current"></div>
+                <span>Procesando archivo Juicios Evaluativos, por favor espera...</span>
+              </div>
+            </div>
+          )}
+
+          {/* Mensaje de error para Juicios Evaluativos */}
+          {juiciosError && (
+            <Alert
+              variant="error"
+              title="Error al subir archivo Juicios Evaluativos"
+              message={juiciosError}
+            />
+          )}
+
+          {/* Respuesta exitosa para Juicios Evaluativos */}
+          {juiciosResponse && (
+            <Alert
+              variant="success"
+              title={juiciosResponse.mensaje || "Archivo procesado correctamente"}
+              message={`• Ficha de Caracterización: ${juiciosResponse.ficha_caracterizacion || 'N/A'}
+• Competencias Procesadas: ${juiciosResponse.competencias_procesadas || 'N/A'}
+• Resultados Procesados: ${juiciosResponse.resultados_procesados || 'N/A'}
+• Registros de Evaluaciones: ${juiciosResponse.registros_evaluaciones || 'N/A'}`}
+            />
+          )}
+
+          {/* Errores para Juicios Evaluativos */}
+          {juiciosResponse &&
+            juiciosResponse.errores &&
+            juiciosResponse.errores.length > 0 && (
+              <Alert
+                variant="error"
+                title="Errores encontrados en Juicios Evaluativos"
+                message={juiciosResponse.errores.join("\n• ")}
               />
             )}
         </div>
