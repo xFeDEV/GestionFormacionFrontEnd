@@ -71,35 +71,20 @@ const ProgramsTable = () => {
   };
 
   useEffect(() => {
-    console.log(
-      "🔄 ProgramsTable - useEffect [paginaActual] ejecutado. Página actual:",
-      paginaActual,
-      "Término de búsqueda:",
-      searchTerm
-    );
-    fetchPrograms(searchTerm);
-
-    // Función de limpieza
-    return () => {
-      console.log(
-        "🧹 ProgramsTable - useEffect [paginaActual] limpieza ejecutada. Página que se desmonta:",
-        paginaActual
-      );
-    };
-  }, [paginaActual]); // Se ejecuta cuando cambia la página
-
-  useEffect(() => {
     // Resetear a la primera página cuando cambie el término de búsqueda
     setPaginaActual(1);
   }, [searchTerm]);
 
   useEffect(() => {
-    // Buscar cuando cambie el término de búsqueda (con debounce simple)
+    // Buscar cuando cambie el término de búsqueda o la página (con debounce)
     const delayedSearch = setTimeout(() => {
       fetchPrograms(searchTerm);
     }, 300);
 
-    return () => clearTimeout(delayedSearch);
+    // Función de limpieza
+    return () => {
+      clearTimeout(delayedSearch);
+    };
   }, [searchTerm, paginaActual]);
 
   const totalPaginas = Math.ceil(totalItems / programsPorPagina);
