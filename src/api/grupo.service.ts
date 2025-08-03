@@ -21,6 +21,7 @@ export interface Grupo {
   hora_fin?: string;
   id_ambiente?: number | null;
   nombre_programa?: string;
+  nombre_ambiente?: string | null;
   [key: string]: any;
 }
 
