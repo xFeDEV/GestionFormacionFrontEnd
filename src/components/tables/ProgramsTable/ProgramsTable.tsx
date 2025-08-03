@@ -71,7 +71,21 @@ const ProgramsTable = () => {
   };
 
   useEffect(() => {
+    console.log(
+      "🔄 ProgramsTable - useEffect [paginaActual] ejecutado. Página actual:",
+      paginaActual,
+      "Término de búsqueda:",
+      searchTerm
+    );
     fetchPrograms(searchTerm);
+
+    // Función de limpieza
+    return () => {
+      console.log(
+        "🧹 ProgramsTable - useEffect [paginaActual] limpieza ejecutada. Página que se desmonta:",
+        paginaActual
+      );
+    };
   }, [paginaActual]); // Se ejecuta cuando cambia la página
 
   useEffect(() => {
