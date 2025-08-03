@@ -42,17 +42,21 @@ const ProgramsTable = () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       const skip = (paginaActual - 1) * programsPorPagina;
       const limit = programsPorPagina;
-      
+
       let data;
       if (searchQuery && searchQuery.trim() !== "") {
-        data = await programService.searchPrograms(searchQuery.trim(), skip, limit);
+        data = await programService.searchPrograms(
+          searchQuery.trim(),
+          skip,
+          limit
+        );
       } else {
         data = await programService.getAllPrograms(skip, limit);
       }
-      
+
       setPrograms(data.items);
       setTotalItems(data.total_items);
     } catch (err) {
@@ -168,15 +172,16 @@ const ProgramsTable = () => {
             placeholder="Buscar programas por nombre o código..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#39A900] dark:bg-gray-800 dark:border-gray-600 dark:text-white"
           />
         </div>
-        
+
         {/* Botón Crear Programa (solo para usuarios autorizados) */}
         {currentUser && allowedRoles.includes(currentUser.id_rol) && (
-          <Button
+          <button
             onClick={() => setIsCreateModalOpen(true)}
-            className="w-full sm:w-auto bg-[#39A900] hover:bg-[#2d8000] text-white flex items-center justify-center gap-2"
+            className="w-full sm:w-auto px-4 py-2 bg-[#39A900] text-white rounded-md hover:bg-[#2d8000] transition-colors flex items-center justify-center gap-2 whitespace-nowrap"
+            title="Crear Programa"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -190,22 +195,26 @@ const ProgramsTable = () => {
                 clipRule="evenodd"
               />
             </svg>
-            Crear Programa
-          </Button>
+            <span className="xs:inline sm:hidden md:inline">
+              Crear Programa
+            </span>
+          </button>
         )}
       </div>
 
       {loading ? (
         <div className="flex justify-center items-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-500"></div>
-          <span className="ml-2 text-gray-600 dark:text-gray-400">Cargando programas...</span>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#39A900]"></div>
+          <span className="ml-2 text-gray-600 dark:text-gray-400">
+            Cargando programas...
+          </span>
         </div>
       ) : error ? (
         <div className="text-center py-8">
           <div className="text-red-500 mb-2">❌ {error}</div>
           <button
             onClick={() => fetchPrograms(searchTerm)}
-            className="text-brand-500 hover:text-brand-600 underline"
+            className="text-[#39A900] hover:text-[#2d8000] underline"
           >
             Intentar nuevamente
           </button>
@@ -264,25 +273,35 @@ const ProgramsTable = () => {
                 <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
                   {programs.length === 0 ? (
                     <TableRow>
-                      <td colSpan={7} className="px-5 py-8 text-center text-gray-500 dark:text-gray-400">
-                        {searchTerm ? "No se encontraron programas que coincidan con la búsqueda" : "No hay programas disponibles"}
+                      <td
+                        colSpan={7}
+                        className="px-5 py-8 text-center text-gray-500 dark:text-gray-400"
+                      >
+                        {searchTerm
+                          ? "No se encontraron programas que coincidan con la búsqueda"
+                          : "No hay programas disponibles"}
                       </td>
                     </TableRow>
                   ) : (
                     programs.map((program) => (
-                      <TableRow key={`${program.cod_programa}-${program.la_version}`}>
+                      <TableRow
+                        key={`${program.cod_programa}-${program.la_version}`}
+                      >
                         <TableCell className="px-5 py-4 text-start">
                           <Badge size="sm" color="primary">
                             {program.cod_programa}
                           </Badge>
                         </TableCell>
-                                                 <TableCell className="px-5 py-4 text-start text-gray-500 dark:text-gray-400">
-                           <Badge size="sm" color="light">
-                             v{program.la_version}
-                           </Badge>
-                         </TableCell>
+                        <TableCell className="px-5 py-4 text-start text-gray-500 dark:text-gray-400">
+                          <Badge size="sm" color="light">
+                            v{program.la_version}
+                          </Badge>
+                        </TableCell>
                         <TableCell className="px-5 py-4 text-start font-medium text-gray-900 dark:text-white">
-                          <div className="max-w-xs truncate" title={program.nombre}>
+                          <div
+                            className="max-w-xs truncate"
+                            title={program.nombre}
+                          >
                             {program.nombre}
                           </div>
                         </TableCell>
@@ -307,29 +326,30 @@ const ProgramsTable = () => {
                         </TableCell>
                         <TableCell className="px-5 py-4 text-start">
                           <div className="flex items-center space-x-2">
-                            {currentUser && allowedRoles.includes(currentUser.id_rol) && (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleEditClick(program)}
-                                className="flex items-center gap-1"
-                              >
-                                <svg
-                                  className="w-4 h-4"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
+                            {currentUser &&
+                              allowedRoles.includes(currentUser.id_rol) && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleEditClick(program)}
+                                  className="flex items-center gap-1"
                                 >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                                  />
-                                </svg>
-                                Editar
-                              </Button>
-                            )}
+                                  <svg
+                                    className="w-4 h-4"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                                    />
+                                  </svg>
+                                  Editar
+                                </Button>
+                              )}
                           </div>
                         </TableCell>
                       </TableRow>
@@ -342,7 +362,7 @@ const ProgramsTable = () => {
 
           {/* --- PAGINACIÓN RESPONSIVE --- */}
           {totalPaginas > 1 && (
-            <div className="flex items-center justify-between px-4 py-3 bg-white border-t border-gray-200 sm:px-6 dark:bg-gray-900 dark:border-gray-800">
+            <div className="flex items-center justify-between px-4 py-3 bg-white border border-gray-200 sm:px-6 dark:bg-gray-900 dark:border-white/[0.05] mt-4 rounded-lg">
               {/* Vista Móvil */}
               <div className="flex justify-between flex-1 sm:hidden">
                 <button
@@ -373,8 +393,7 @@ const ProgramsTable = () => {
                     <span className="font-medium">
                       {Math.min(paginaActual * programsPorPagina, totalItems)}
                     </span>{" "}
-                    de{" "}
-                    <span className="font-medium">{totalItems}</span>{" "}
+                    de <span className="font-medium">{totalItems}</span>{" "}
                     resultados
                   </p>
                 </div>
@@ -457,7 +476,7 @@ const ProgramsTable = () => {
         onClose={() => setIsCreateModalOpen(false)}
         onSave={handleCreateSave}
       />
-      
+
       <EditProgramModal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}

@@ -17,16 +17,28 @@ import Badge from "../../ui/badge/Badge";
 
 const GrupoTable = () => {
   const [grupos, setGrupos] = useState<Grupo[]>([]);
+  const [totalItems, setTotalItems] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedGrupo, setSelectedGrupo] = useState<Grupo | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
 
   const [paginaActual, setPaginaActual] = useState(1);
   const gruposPorPagina = 10;
 
-  const fetchGrupos = async () => {
+  // useEffect para implementar el debounce
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 500);
+
+    // Función de limpieza para cancelar el temporizador
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  const fetchGrupos = async (pagina: number = paginaActual) => {
     try {
       setLoading(true);
       setError(null);
@@ -43,8 +55,27 @@ const GrupoTable = () => {
         setLoading(false);
         return;
       }
-      const data = await grupoService.getGruposByCentro(codCentro);
-      setGrupos(data);
+
+      // Calcular skip basado en la página actual
+      const skip = (pagina - 1) * gruposPorPagina;
+      const limit = gruposPorPagina;
+
+      let response;
+
+      // Decidir si buscar o listar todos los grupos
+      if (debouncedSearchTerm.trim()) {
+        response = await grupoService.advancedSearchGrupos(
+          debouncedSearchTerm,
+          codCentro,
+          skip,
+          limit
+        );
+      } else {
+        response = await grupoService.getGruposByCentro(codCentro, skip, limit);
+      }
+
+      setGrupos(response.items);
+      setTotalItems(response.total_items);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Error al cargar los grupos."
@@ -56,7 +87,14 @@ const GrupoTable = () => {
 
   useEffect(() => {
     fetchGrupos();
-  }, []);
+  }, [paginaActual, debouncedSearchTerm]); // Agregamos debouncedSearchTerm como dependencia
+
+  // Resetear a página 1 cuando cambie el término de búsqueda
+  useEffect(() => {
+    if (debouncedSearchTerm !== searchTerm && paginaActual !== 1) {
+      setPaginaActual(1);
+    }
+  }, [debouncedSearchTerm]);
 
   const handleEditClick = (grupo: Grupo) => {
     setSelectedGrupo(grupo);
@@ -70,31 +108,28 @@ const GrupoTable = () => {
     try {
       await grupoService.updateGrupo(cod_ficha, updatedData);
       setIsModalOpen(false);
-      fetchGrupos();
+      fetchGrupos(paginaActual);
     } catch (error) {
       console.error("Error al guardar:", error);
       throw error;
     }
   };
 
-  const filteredGrupos = grupos.filter(
-    (grupo) =>
-      grupo.cod_ficha.toString().includes(searchTerm) ||
-      (grupo.responsable &&
-        grupo.responsable.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  // Ya no necesitamos filtrado local porque la búsqueda se hace en el servidor
+  // Solo mostramos los grupos que vienen del servidor
+  const gruposPaginados = grupos;
 
-  const totalPaginas = Math.ceil(filteredGrupos.length / gruposPorPagina);
-
-  const gruposPaginados = filteredGrupos.slice(
-    (paginaActual - 1) * gruposPorPagina,
-    paginaActual * gruposPorPagina
-  );
+  // Calcular total de páginas basado en la respuesta del servidor
+  const totalPaginas = Math.ceil(totalItems / gruposPorPagina);
 
   const handleCambiarPagina = (nuevaPagina: number) => {
     if (nuevaPagina > 0 && nuevaPagina <= totalPaginas) {
       setPaginaActual(nuevaPagina);
     }
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
   };
 
   const obtenerNumerosDePagina = () => {
@@ -131,14 +166,14 @@ const GrupoTable = () => {
           type="text"
           placeholder="Buscar por N° de ficha o responsable..."
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          onChange={handleSearchChange}
           className="w-full max-w-sm px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
         />
       </div>
 
       {loading ? (
         <div className="flex flex-col items-center justify-center py-12 px-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-500 mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#39A900] mb-4"></div>
           <div className="text-center">
             <p className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">
               Cargando grupos de formación...
@@ -377,13 +412,9 @@ const GrupoTable = () => {
                   </span>{" "}
                   a{" "}
                   <span className="font-medium">
-                    {Math.min(
-                      paginaActual * gruposPorPagina,
-                      filteredGrupos.length
-                    )}
+                    {Math.min(paginaActual * gruposPorPagina, totalItems)}
                   </span>{" "}
-                  de{" "}
-                  <span className="font-medium">{filteredGrupos.length}</span>{" "}
+                  de <span className="font-medium">{totalItems}</span>{" "}
                   resultados
                 </p>
               </div>
@@ -470,4 +501,4 @@ const GrupoTable = () => {
   );
 };
 
-export default GrupoTable; 
+export default GrupoTable;
