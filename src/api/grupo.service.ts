@@ -217,7 +217,7 @@ const updateGrupo = async (
 };
 
 /**
- * Función para buscar grupos por texto de búsqueda
+ * Función para buscar grupos por texto de búsqueda (para select/autocompletar)
  * @param query - Texto de búsqueda para filtrar los grupos
  * @param limit - Número máximo de resultados (opcional, por defecto 20)
  * @returns Promise con la lista de grupos que coinciden con la búsqueda
@@ -231,7 +231,33 @@ const searchGrupos = async (
       query
     )}&limit=${limit}`;
     const gruposData = await apiClient(endpoint, "GET");
-    return gruposData;
+    
+    // Mapear la respuesta a la interfaz Grupo completa
+    const gruposMapeados: Grupo[] = gruposData.map((grupo: any) => ({
+      cod_ficha: grupo.cod_ficha,
+      estado_grupo: grupo.estado_grupo,
+      jornada: grupo.jornada,
+      fecha_inicio: grupo.fecha_inicio,
+      fecha_fin: grupo.fecha_fin,
+      etapa: grupo.etapa,
+      responsable: grupo.responsable,
+      nombre_programa: grupo.nombre_programa,
+      nombre_ambiente: grupo.nombre_ambiente,
+      // Mapear otros campos que puedan estar disponibles
+      modalidad: grupo.modalidad || null,
+      nombre_municipio: grupo.nombre_municipio || null,
+      nombre_nivel: grupo.nombre_nivel || null,
+      cod_centro: grupo.cod_centro || null,
+      cod_programa: grupo.cod_programa || null,
+      la_version: grupo.la_version || null,
+      hora_inicio: grupo.hora_inicio || null,
+      hora_fin: grupo.hora_fin || null,
+      id_ambiente: grupo.id_ambiente || null,
+      nombre_empresa: grupo.nombre_empresa || null,
+      nombre_programa_especial: grupo.nombre_programa_especial || null,
+    }));
+    
+    return gruposMapeados;
   } catch (error) {
     console.error(`Error al buscar grupos con query "${query}":`, error);
     throw error;

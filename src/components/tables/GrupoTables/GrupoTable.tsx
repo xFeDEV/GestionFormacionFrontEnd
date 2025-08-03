@@ -56,21 +56,26 @@ const GrupoTable = () => {
         return;
       }
 
-      // Calcular skip basado en la página actual
-      const skip = (pagina - 1) * gruposPorPagina;
-      const limit = gruposPorPagina;
-
       let response;
 
       // Decidir si buscar o listar todos los grupos
       if (debouncedSearchTerm.trim()) {
-        response = await grupoService.advancedSearchGrupos(
-          debouncedSearchTerm,
-          codCentro,
-          skip,
-          limit
-        );
+        // Para búsqueda, usar el endpoint simple sin paginación ni filtro de centro
+        const grupos = await grupoService.searchGrupos(debouncedSearchTerm, 100);
+        
+        // Simular paginación del lado del cliente para búsquedas
+        const skip = (pagina - 1) * gruposPorPagina;
+        const gruposPaginados = grupos.slice(skip, skip + gruposPorPagina);
+        
+        response = {
+          items: gruposPaginados,
+          total_items: grupos.length
+        };
       } else {
+        // Para listar todos, usar endpoint con paginación y filtro de centro
+        const skip = (pagina - 1) * gruposPorPagina;
+        const limit = gruposPorPagina;
+        
         response = await grupoService.getGruposByCentro(codCentro, skip, limit);
       }
 
@@ -164,7 +169,7 @@ const GrupoTable = () => {
       <div className="mb-4">
         <input
           type="text"
-          placeholder="Buscar por N° de ficha o responsable..."
+          placeholder="Buscar por N° de ficha, programa, responsable o ambiente..."
           value={searchTerm}
           onChange={handleSearchChange}
           className="w-full max-w-sm px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white"

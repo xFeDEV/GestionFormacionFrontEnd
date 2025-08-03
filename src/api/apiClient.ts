@@ -92,8 +92,20 @@ export const apiClient = async (
       throw error;
     }
 
-    // Devolver la respuesta parseada como JSON
-    return await response.json();
+    // Para respuestas sin contenido (204 No Content), devolver null
+    if (response.status === 204) {
+      return null;
+    }
+
+    // Verificar si la respuesta tiene contenido JSON
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+      return await response.json();
+    }
+
+    // Si no es JSON, devolver texto plano o null
+    const text = await response.text();
+    return text || null;
   } catch (error) {
     // Manejar errores de red y otros errores
     if (error instanceof TypeError && error.message.includes("fetch")) {

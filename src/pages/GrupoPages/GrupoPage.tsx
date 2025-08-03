@@ -3,6 +3,7 @@ import ComponentCard from "../../components/common/ComponentCard";
 import PageBreadCrumb from "../../components/common/PageBreadCrumb";
 import GrupoSearch from "../../components/GrupoDetails/GrupoSearch";
 import GrupoInfoCards from "../../components/GrupoDetails/GrupoInfoCards";
+import GestionInstructoresGrupo from "../../components/GrupoDetails/GestionInstructoresGrupo";
 import GrupoTable from "../../components/tables/GrupoTables/GrupoTable";
 import { Modal } from "../../components/ui/modal";
 import Button from "../../components/ui/button/Button";
@@ -120,7 +121,10 @@ const GrupoPage = () => {
                 </div>
               </div>
             </div>
-            <GrupoInfoCards grupo={grupoSeleccionado} />
+            <div className="space-y-6">
+              <GrupoInfoCards grupo={grupoSeleccionado} />
+              <GestionInstructoresGrupo cod_ficha={grupoSeleccionado.cod_ficha} />
+            </div>
           </div>
         )}
 
@@ -143,6 +147,7 @@ const GrupoPage = () => {
         isOpen={isTableModalOpen} 
         onClose={() => setIsTableModalOpen(false)}
         className="max-w-[95vw] w-full max-h-[90vh]"
+        showCloseButton={false}
       >
         <div className="p-6">
           <div className="flex items-center justify-between mb-6">
