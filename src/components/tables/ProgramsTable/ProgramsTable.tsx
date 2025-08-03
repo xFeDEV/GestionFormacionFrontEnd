@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import {
   programService,
   Program,
@@ -501,4 +501,4 @@ const ProgramsTable = () => {
   );
 };
 
-export default ProgramsTable;
+export default memo(ProgramsTable);
