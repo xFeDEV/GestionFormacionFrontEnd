@@ -21,11 +21,13 @@ import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/Dashboard/Home";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
+import RoleProtectedRoute from "./components/auth/RoleProtectedRoute";
 import UsersPage from "./pages/UsersPage";
 import AmbienteDeFormacion from "./pages/AmbientePges/AmbienteDeFormacion";
 import CargaMasivaPage from "./pages/CargaMasiva/CargaMasivaPage";
 import ProgramsPage from "./pages/Programs/ProgramsPage";
 import GrupoPage from "./pages/GrupoPages/GrupoPage";
+import GruposInstructorPage from "./pages/GruposInstructor/GruposInstructorPage";
 
 export default function App() {
   return (
@@ -59,8 +61,23 @@ export default function App() {
               element={<AmbienteDeFormacion />}
             />
             <Route path="/carga-masiva" element={<CargaMasivaPage />} />
-            <Route path="/programas-formacion" element={<ProgramsPage />} />
+            <Route 
+              path="/programas-formacion" 
+              element={
+                <RoleProtectedRoute allowedRoleIds={[1, 2]}>
+                  <ProgramsPage />
+                </RoleProtectedRoute>
+              } 
+            />
             <Route path="/grupos" element={<GrupoPage />} />
+            <Route 
+              path="/grupos-instructor" 
+              element={
+                <RoleProtectedRoute allowedRoleIds={[3]}>
+                  <GruposInstructorPage />
+                </RoleProtectedRoute>
+              } 
+            />
 
             {/* User Profiles */}
 

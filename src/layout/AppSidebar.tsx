@@ -59,6 +59,11 @@ const navItems: NavItem[] = [
     path: "/programacion-instructor",
   },
   {
+    icon: <GroupIcon />,
+    name: "Mis Grupos",
+    path: "/grupos-instructor",
+  },
+  {
     icon: <UserCircleIcon />,
     name: "Perfil de Usuario",
     path: "/profile",
@@ -164,6 +169,28 @@ const AppSidebar: React.FC = () => {
             !currentUser ||
             !currentUser.id_rol ||
             !allowedRoles.includes(currentUser.id_rol)
+          ) {
+            return null;
+          }
+        }
+        
+        // Ocultar "Programas de Formación" para instructores (solo visible para superadmin y admin)
+        if (nav.path === "/programas-formacion") {
+          if (
+            !currentUser ||
+            !currentUser.id_rol ||
+            !allowedRoles.includes(currentUser.id_rol)
+          ) {
+            return null;
+          }
+        }
+        
+        // Ocultar "Mis Grupos" para superadmin y admin (solo visible para instructores)
+        if (nav.path === "/grupos-instructor") {
+          if (
+            !currentUser ||
+            !currentUser.id_rol ||
+            currentUser.id_rol !== 3 // Solo visible para instructores (ID: 3)
           ) {
             return null;
           }

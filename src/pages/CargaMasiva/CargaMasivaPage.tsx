@@ -234,7 +234,7 @@ const CargaMasivaPage: React.FC = () => {
   };
 
   return (
-    <>
+    <div className="space-y-6">
       <PageBreadcrumb pageTitle="Carga Masiva de Datos" />
 
       {/* Tarjeta para PE-04 */}
@@ -628,7 +628,7 @@ const CargaMasivaPage: React.FC = () => {
             )}
         </div>
       </ComponentCard>
-    </>
+    </div>
   );
 };
 
