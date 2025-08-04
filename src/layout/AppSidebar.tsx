@@ -56,7 +56,7 @@ const navItems: NavItem[] = [
   {
     icon: <CalenderIcon />,
     name: "Programacion Instructores",
-    path: "/calendar",
+    path: "/programacion-instructor",
   },
   {
     icon: <UserCircleIcon />,
@@ -136,7 +136,41 @@ const AppSidebar: React.FC = () => {
   const renderMenuItems = (items: NavItem[], menuType: "main" | "others") => (
     <ul className="flex flex-col gap-4">
       {items.map((nav, index) => {
+        // Ocultar "Usuarios" para roles no autorizados
         if (nav.path === "/usuarios") {
+          if (
+            !currentUser ||
+            !currentUser.id_rol ||
+            !allowedRoles.includes(currentUser.id_rol)
+          ) {
+            return null;
+          }
+        }
+        
+        // Ocultar "Dashboard" para instructores (solo visible para superadmin y admin)
+        if (nav.path === "/") {
+          if (
+            !currentUser ||
+            !currentUser.id_rol ||
+            !allowedRoles.includes(currentUser.id_rol)
+          ) {
+            return null;
+          }
+        }
+        
+        // Ocultar "Gestión de Grupos" para instructores (solo visible para superadmin y admin)
+        if (nav.path === "/grupos") {
+          if (
+            !currentUser ||
+            !currentUser.id_rol ||
+            !allowedRoles.includes(currentUser.id_rol)
+          ) {
+            return null;
+          }
+        }
+        
+        // Ocultar "Carga Masiva" para instructores (solo visible para superadmin y admin)
+        if (nav.path === "/carga-masiva") {
           if (
             !currentUser ||
             !currentUser.id_rol ||

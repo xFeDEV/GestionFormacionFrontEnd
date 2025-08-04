@@ -51,7 +51,7 @@ export default function App() {
 
             {/* Others Page */}
             <Route path="/profile" element={<UserProfiles />} />
-            <Route path="/calendar" element={<Calendar />} />
+            <Route path="/programacion-instructor" element={<Calendar />} />
             <Route path="/blank" element={<Blank />} />
             <Route path="/usuarios" element={<UsersPage />} />
             <Route

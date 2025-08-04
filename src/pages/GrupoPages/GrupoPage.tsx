@@ -8,8 +8,38 @@ import GrupoTable from "../../components/tables/GrupoTables/GrupoTable";
 import { Modal } from "../../components/ui/modal";
 import Button from "../../components/ui/button/Button";
 import { grupoService, Grupo } from "../../api/grupo.service";
+import useAuth from "../../hooks/useAuth";
+import Alert from "../../components/ui/alert/Alert";
+
+// Constante para los roles permitidos (Superadmin y Admin)
+const ALLOWED_ROLES = [1, 2]; // 1: Superadmin, 2: Admin
 
 const GrupoPage = () => {
+  // Usuario autenticado y roles permitidos
+  const currentUser = useAuth();
+
+  // Si el hook todavía está cargando el usuario, mostrar verificación
+  if (!currentUser) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#39A900]"></div>
+        <span className="ml-3 text-gray-600 dark:text-gray-300">
+          Verificando acceso...
+        </span>
+      </div>
+    );
+  }
+
+  // Si el rol del usuario no está permitido, mostrar acceso denegado
+  if (!currentUser.id_rol || !ALLOWED_ROLES.includes(currentUser.id_rol)) {
+    return (
+      <Alert
+        variant="error"
+        title="Acceso Denegado"
+        message="No tienes los permisos necesarios para ver esta sección."
+      />
+    );
+  }
   // Estado para almacenar los detalles del grupo seleccionado
   const [grupoSeleccionado, setGrupoSeleccionado] = useState<Grupo | null>(null);
   const [loading, setLoading] = useState(false);

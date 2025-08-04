@@ -6,8 +6,15 @@ import Alert from "../../components/ui/alert/Alert";
 import Button from "../../components/ui/button/Button";
 import { fileService } from "../../api/file.service";
 import { FileIcon, TrashBinIcon, DownloadIcon } from "../../icons";
+import useAuth from "../../hooks/useAuth";
+
+// Constante para los roles permitidos (Superadmin y Admin)
+const ALLOWED_ROLES = [1, 2]; // 1: Superadmin, 2: Admin
 
 const CargaMasivaPage: React.FC = () => {
+  // Usuario autenticado y roles permitidos
+  const currentUser = useAuth();
+
   // Estados para el archivo PE-04
   const [selectedPe04File, setSelectedPe04File] = useState<File | null>(null);
   const [pe04Response, setPe04Response] = useState<any>(null);
@@ -100,6 +107,29 @@ const CargaMasivaPage: React.FC = () => {
     multiple: false,
     maxFiles: 1,
   });
+
+  // Si el hook todavía está cargando el usuario, mostrar verificación
+  if (!currentUser) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#39A900]"></div>
+        <span className="ml-3 text-gray-600 dark:text-gray-300">
+          Verificando acceso...
+        </span>
+      </div>
+    );
+  }
+
+  // Si el rol del usuario no está permitido, mostrar acceso denegado
+  if (!currentUser.id_rol || !ALLOWED_ROLES.includes(currentUser.id_rol)) {
+    return (
+      <Alert
+        variant="error"
+        title="Acceso Denegado"
+        message="No tienes los permisos necesarios para ver esta sección."
+      />
+    );
+  }
 
   // Función para manejar la subida del archivo PE-04
   const handlePe04Upload = async () => {

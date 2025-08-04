@@ -12,8 +12,14 @@ import Button from "../../ui/button/Button";
 import { ambienteService, Ambiente, CreateAmbientePayload, UpdateAmbientePayload } from "../../../api/ambiente.service";
 import CreateAmbienteModal from "../../modals/CreateAmbienteModal";
 import EditAmbienteModal from "../../modals/EditAmbienteModal";
+import useAuth from "../../../hooks/useAuth";
+
+// Constante para los roles permitidos (Superadmin y Admin)
+const ALLOWED_ROLES = [1, 2]; // 1: Superadmin, 2: Admin
 
 export default function BasicTableAmbiente() {
+  // Usuario autenticado y roles permitidos
+  const currentUser = useAuth();
   const [ambientes, setAmbientes] = useState<Ambiente[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -140,26 +146,29 @@ export default function BasicTableAmbiente() {
             />
           </svg>
         </div>
-        <button
-          onClick={handleCrearAmbiente}
-          className="w-full sm:w-auto px-4 py-2 bg-[#39A900] text-white rounded-md hover:bg-[#2d8000] transition-colors flex items-center justify-center gap-2 whitespace-nowrap"
-          title="Crear Ambiente"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5"
-            viewBox="0 0 20 20"
-            fill="currentColor"
+        {/* Botón Crear Ambiente (solo para superadmin y admin) */}
+        {currentUser && currentUser.id_rol && ALLOWED_ROLES.includes(currentUser.id_rol) && (
+          <button
+            onClick={handleCrearAmbiente}
+            className="w-full sm:w-auto px-4 py-2 bg-[#39A900] text-white rounded-md hover:bg-[#2d8000] transition-colors flex items-center justify-center gap-2 whitespace-nowrap"
+            title="Crear Ambiente"
           >
-            <path
-              fillRule="evenodd"
-              d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
-              clipRule="evenodd"
-            />
-          </svg>
-          <span className="xs:inline sm:hidden md:inline">Crear Ambiente</span>
-          <span className="hidden sm:inline md:hidden">Crear</span>
-        </button>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                clipRule="evenodd"
+              />
+            </svg>
+            <span className="xs:inline sm:hidden md:inline">Crear Ambiente</span>
+            <span className="hidden sm:inline md:hidden">Crear</span>
+          </button>
+        )}
       </div>
 
       {/* Estados de carga y error */}
@@ -271,17 +280,20 @@ export default function BasicTableAmbiente() {
                     </Badge>
                   </TableCell>
                   <TableCell className="px-4 py-3 text-start">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleEditar(ambiente)}
-                      className="px-3 py-1 text-xs"
-                    >
-                      <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                      </svg>
-                      Editar
-                    </Button>
+                    {/* Botón Editar (solo para superadmin y admin) */}
+                    {currentUser && currentUser.id_rol && ALLOWED_ROLES.includes(currentUser.id_rol) && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleEditar(ambiente)}
+                        className="px-3 py-1 text-xs"
+                      >
+                        <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                        Editar
+                      </Button>
+                    )}
                   </TableCell>
                 </TableRow>
               ))}

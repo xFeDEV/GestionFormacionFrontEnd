@@ -31,8 +31,19 @@ export default function SignInForm() {
       // Guardar el objeto de usuario completo como un string JSON
       localStorage.setItem("user_data", JSON.stringify(data.user));
 
-      // Redirigir al usuario a la página principal
-      navigate("/");
+      // Redirigir según el rol del usuario
+      const userRole = data.user.id_rol;
+      
+      if (userRole === 1 || userRole === 2) {
+        // SuperAdmin (1) o Admin (2) → Dashboard
+        navigate("/");
+      } else if (userRole === 3) {
+        // Instructor (3) → Programación de Instructor
+        navigate("/programacion-instructor");
+      } else {
+        // Rol desconocido → Dashboard por defecto
+        navigate("/");
+      }
     } catch (error) {
       // Manejar diferentes tipos de errores
       if (error instanceof Error) {
