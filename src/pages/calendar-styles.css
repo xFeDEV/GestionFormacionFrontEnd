@@ -198,3 +198,13 @@
   color: white !important;
   border-color: #dc2626 !important;
 }
+
+/* Capitalizar la primera letra del título del mes */
+.fc-toolbar-title {
+  text-transform: capitalize !important;
+}
+
+/* Asegurar que el título completo tenga la primera letra en mayúscula */
+.fc-toolbar-title::first-letter {
+  text-transform: uppercase !important;
+}

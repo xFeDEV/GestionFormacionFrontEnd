@@ -296,7 +296,7 @@ const ProgramsTable = () => {
                             v{program.la_version}
                           </Badge>
                         </TableCell>
-                        <TableCell className="px-5 py-4 text-start font-medium text-gray-900 dark:text-white">
+                        <TableCell className="px-5 py-4 text-start font-medium text-gray-800 text-theme-sm dark:text-white/90">
                           <div
                             className="max-w-xs truncate"
                             title={program.nombre}

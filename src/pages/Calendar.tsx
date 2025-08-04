@@ -690,11 +690,24 @@ const Calendar: React.FC = () => {
             ref={calendarRef}
             plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
             initialView="dayGridMonth"
+            locale="es"
             headerToolbar={{
               left: "prev,next",
               center: "title",
               right: "dayGridMonth,timeGridWeek,timeGridDay",
             }}
+            buttonText={{
+              today: 'Hoy',
+              month: 'Mes',
+              week: 'Semana',
+              day: 'Día',
+              list: 'Lista'
+            }}
+            titleFormat={{ 
+              year: 'numeric', 
+              month: 'long' 
+            }}
+            dayHeaderFormat={{ weekday: 'long' }}
             events={events}
             selectable={true}
             selectAllow={(selectInfo) => {

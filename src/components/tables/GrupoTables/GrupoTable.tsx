@@ -42,6 +42,13 @@ const GrupoTable = () => {
     try {
       setLoading(true);
       setError(null);
+      
+      console.log('🔍 [DEBUG] fetchGrupos iniciado:', {
+        pagina,
+        debouncedSearchTerm,
+        searchTerm
+      });
+      
       const userDataString = localStorage.getItem("user_data");
       if (!userDataString) {
         setError("No se encontraron datos del usuario.");
@@ -60,18 +67,25 @@ const GrupoTable = () => {
 
       // Decidir si buscar o listar todos los grupos
       if (debouncedSearchTerm.trim()) {
-        // Para búsqueda, usar el endpoint simple sin paginación ni filtro de centro
-        const grupos = await grupoService.searchGrupos(debouncedSearchTerm, 100);
+        console.log('🔍 [DEBUG] Realizando búsqueda:', {
+          query: debouncedSearchTerm,
+          codCentro,
+          skip: (pagina - 1) * gruposPorPagina,
+          limit: gruposPorPagina
+        });
         
-        // Simular paginación del lado del cliente para búsquedas
+        // Para búsqueda, usar el endpoint avanzado con paginación y filtro de centro
         const skip = (pagina - 1) * gruposPorPagina;
-        const gruposPaginados = grupos.slice(skip, skip + gruposPorPagina);
+        const limit = gruposPorPagina;
         
-        response = {
-          items: gruposPaginados,
-          total_items: grupos.length
-        };
+        response = await grupoService.advancedSearchGrupos(debouncedSearchTerm, codCentro, skip, limit);
       } else {
+        console.log('🔍 [DEBUG] Listando todos los grupos:', {
+          codCentro,
+          skip: (pagina - 1) * gruposPorPagina,
+          limit: gruposPorPagina
+        });
+        
         // Para listar todos, usar endpoint con paginación y filtro de centro
         const skip = (pagina - 1) * gruposPorPagina;
         const limit = gruposPorPagina;
@@ -79,9 +93,12 @@ const GrupoTable = () => {
         response = await grupoService.getGruposByCentro(codCentro, skip, limit);
       }
 
+      console.log('🔍 [DEBUG] Respuesta recibida:', response);
+
       setGrupos(response.items);
       setTotalItems(response.total_items);
     } catch (err) {
+      console.error('❌ [ERROR] Error en fetchGrupos:', err);
       setError(
         err instanceof Error ? err.message : "Error al cargar los grupos."
       );
@@ -94,12 +111,12 @@ const GrupoTable = () => {
     fetchGrupos();
   }, [paginaActual, debouncedSearchTerm]); // Agregamos debouncedSearchTerm como dependencia
 
-  // Resetear a página 1 cuando cambie el término de búsqueda
+  // Resetear a página 1 cuando cambie el término de búsqueda (sin crear bucle infinito)
   useEffect(() => {
-    if (debouncedSearchTerm !== searchTerm && paginaActual !== 1) {
+    if (debouncedSearchTerm && paginaActual !== 1) {
       setPaginaActual(1);
     }
-  }, [debouncedSearchTerm]);
+  }, [debouncedSearchTerm]); // Removemos paginaActual de las dependencias para evitar bucle
 
   const handleEditClick = (grupo: Grupo) => {
     setSelectedGrupo(grupo);

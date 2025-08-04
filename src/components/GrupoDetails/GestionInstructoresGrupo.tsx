@@ -5,7 +5,7 @@ import {
   InstructorDeGrupo 
 } from "../../api/grupoInstructor.service";
 import { userService, User } from "../../api/user.service";
-import { TrashBinIcon, PlusIcon } from "../../icons";
+import { TrashBinIcon } from "../../icons";
 import ComponentCard from "../common/ComponentCard";
 
 interface GestionInstructoresGrupoProps {
@@ -260,7 +260,8 @@ const GestionInstructoresGrupo: React.FC<GestionInstructoresGrupoProps> = ({
         {/* Sección para asignar nuevos instructores */}
         <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            Asignar Nuevo Instructor
+            Asignar Nuevo
+             Instructor
           </h3>
           
           <div className="space-y-4">
@@ -292,10 +293,10 @@ const GestionInstructoresGrupo: React.FC<GestionInstructoresGrupoProps> = ({
               <button
                 onClick={handleAsignar}
                 disabled={!instructorSeleccionado || asignando}
-                className={`inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white transition-colors ${
+                className={`inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white transition-colors ${
                   !instructorSeleccionado || asignando
                     ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                    : "bg-[#39A900] hover:bg-[#2d8000] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#39A900]"
                 }`}
               >
                 {asignando ? (
@@ -304,10 +305,7 @@ const GestionInstructoresGrupo: React.FC<GestionInstructoresGrupoProps> = ({
                     Asignando...
                   </>
                 ) : (
-                  <>
-                    <PlusIcon className="h-4 w-4 mr-2" />
-                    Asignar Instructor
-                  </>
+                  "Asignar Instructor"
                 )}
               </button>
             </div>
