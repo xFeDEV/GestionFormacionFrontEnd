@@ -4,6 +4,7 @@ import {
   Grupo,
   UpdateGrupoPayload,
 } from "../../../api/grupo.service";
+import { ambienteService } from "../../../api/ambiente.service";
 import EditGrupoModal from "../../modals/EditGrupoModal";
 import Button from "../../ui/button/Button";
 import {
@@ -24,6 +25,7 @@ const GrupoTable = () => {
   const [selectedGrupo, setSelectedGrupo] = useState<Grupo | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+  const [ambientesCache, setAmbientesCache] = useState<Map<number, string>>(new Map());
 
   const [paginaActual, setPaginaActual] = useState(1);
   const gruposPorPagina = 10;
@@ -37,6 +39,49 @@ const GrupoTable = () => {
     // Función de limpieza para cancelar el temporizador
     return () => clearTimeout(timer);
   }, [searchTerm]);
+
+  // Función para enriquecer grupos con nombres de ambientes
+  const enriquecerGruposConAmbientes = async (grupos: Grupo[]): Promise<Grupo[]> => {
+    try {
+      // Si ya tenemos ambientes en caché, usarlos
+      if (ambientesCache.size > 0) {
+        return grupos.map(grupo => ({
+          ...grupo,
+          nombre_ambiente: grupo.id_ambiente ? ambientesCache.get(grupo.id_ambiente) || null : null
+        }));
+      }
+
+      const userDataString = localStorage.getItem("user_data");
+      if (!userDataString) return grupos;
+      
+      const userData = JSON.parse(userDataString);
+      const codCentro = userData.cod_centro;
+      if (!codCentro) return grupos;
+
+      // Obtener todos los ambientes del centro
+      const ambientes = await ambienteService.getAmbientesActivosByCentro(codCentro);
+      
+      // Crear un mapa de ID ambiente -> nombre ambiente y actualizar caché
+      const nuevoAmbientesMap = new Map<number, string>();
+      ambientes.forEach(ambiente => {
+        if (ambiente.id_ambiente) {
+          nuevoAmbientesMap.set(ambiente.id_ambiente, ambiente.nombre_ambiente);
+        }
+      });
+
+      // Actualizar caché
+      setAmbientesCache(nuevoAmbientesMap);
+
+      // Enriquecer cada grupo con el nombre del ambiente
+      return grupos.map(grupo => ({
+        ...grupo,
+        nombre_ambiente: grupo.id_ambiente ? nuevoAmbientesMap.get(grupo.id_ambiente) || null : null
+      }));
+    } catch (error) {
+      console.error('Error al enriquecer grupos con ambientes:', error);
+      return grupos; // Devolver grupos sin enriquecer si hay error
+    }
+  };
 
   const fetchGrupos = async (pagina: number = paginaActual) => {
     try {
@@ -95,7 +140,10 @@ const GrupoTable = () => {
 
       console.log('🔍 [DEBUG] Respuesta recibida:', response);
 
-      setGrupos(response.items);
+      // Enriquecer los grupos con nombres de ambientes
+      const gruposEnriquecidos = await enriquecerGruposConAmbientes(response.items);
+      
+      setGrupos(gruposEnriquecidos);
       setTotalItems(response.total_items);
     } catch (err) {
       console.error('❌ [ERROR] Error en fetchGrupos:', err);
@@ -314,7 +362,7 @@ const GrupoTable = () => {
                       isHeader
                       className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
                     >
-                      Ambiente ID
+                      Ambiente
                     </TableCell>
                     <TableCell
                       isHeader
@@ -378,9 +426,9 @@ const GrupoTable = () => {
                         {grupo.hora_inicio} - {grupo.hora_fin}
                       </TableCell>
                       <TableCell className="px-5 py-4 text-start">
-                        {grupo.id_ambiente ? (
+                        {grupo.nombre_ambiente ? (
                           <Badge size="sm" color="success">
-                            {grupo.id_ambiente}
+                            {grupo.nombre_ambiente}
                           </Badge>
                         ) : (
                           <Badge size="sm" color="light">

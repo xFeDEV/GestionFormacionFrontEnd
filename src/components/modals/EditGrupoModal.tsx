@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Grupo, UpdateGrupoPayload } from '../../api/grupo.service';
+import { ambienteService, Ambiente } from '../../api/ambiente.service';
 import { Modal } from '../ui/modal';
 import InputField from '../form/input/InputField';
 import Label from '../form/Label';
 import Button from '../ui/button/Button';
-import Alert from '../ui/alert/Alert'; // <-- 1. Importar el componente de Alerta
+import Alert from '../ui/alert/Alert';
 
 interface EditGrupoModalProps {
   isOpen: boolean;
@@ -26,11 +27,42 @@ const EditGrupoModal: React.FC<EditGrupoModalProps> = ({
   });
 
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null); // <-- 2. Estado para el mensaje de error
+  const [error, setError] = useState<string | null>(null);
+  const [ambientes, setAmbientes] = useState<Ambiente[]>([]);
+  const [loadingAmbientes, setLoadingAmbientes] = useState(false);
+
+  // Cargar ambientes del centro del usuario
+  const cargarAmbientes = async () => {
+    try {
+      setLoadingAmbientes(true);
+      const userDataString = localStorage.getItem("user_data");
+      if (!userDataString) {
+        console.error("No se encontraron datos del usuario.");
+        return;
+      }
+      const userData = JSON.parse(userDataString);
+      const codCentro = userData.cod_centro;
+      if (!codCentro) {
+        console.error("No se encontró el código de centro del usuario.");
+        return;
+      }
+
+      const ambientesData = await ambienteService.getAmbientesActivosByCentro(codCentro);
+      setAmbientes(ambientesData);
+    } catch (error) {
+      console.error("Error al cargar ambientes:", error);
+      setError("Error al cargar los ambientes disponibles.");
+    } finally {
+      setLoadingAmbientes(false);
+    }
+  };
 
   // Resetear el error cuando se cierra o se abre con nuevos datos
   useEffect(() => {
     setError(null);
+    if (isOpen) {
+      cargarAmbientes(); // Cargar ambientes cuando se abra el modal
+    }
     if (grupoData) {
       setFormData({
         hora_inicio: grupoData.hora_inicio || '00:00:00',
@@ -45,6 +77,14 @@ const EditGrupoModal: React.FC<EditGrupoModalProps> = ({
     setFormData(prev => ({
       ...prev,
       [name]: name === 'id_ambiente' ? (value ? Number(value) : null) : value,
+    }));
+  };
+
+  const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value ? Number(value) : null,
     }));
   };
 
@@ -113,16 +153,29 @@ const EditGrupoModal: React.FC<EditGrupoModalProps> = ({
           </div>
 
           <div>
-            <Label htmlFor="id_ambiente">ID Ambiente</Label>
-            <InputField
-              type="number"
-              id="id_ambiente"
-              name="id_ambiente"
-              placeholder="ID del ambiente"
-              value={formData.id_ambiente ?? ''}
-              onChange={handleInputChange}
-              disabled={loading}
-            />
+            <Label htmlFor="id_ambiente">Ambiente</Label>
+            {loadingAmbientes ? (
+              <div className="flex items-center justify-center py-2">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#39A900] mr-2"></div>
+                <span className="text-sm text-gray-500">Cargando ambientes...</span>
+              </div>
+            ) : (
+              <select
+                id="id_ambiente"
+                name="id_ambiente"
+                value={formData.id_ambiente ?? ''}
+                onChange={handleSelectChange}
+                disabled={loading}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#39A900] focus:border-[#39A900] dark:bg-gray-800 dark:border-gray-600 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <option value="">Seleccionar ambiente</option>
+                {ambientes.map((ambiente) => (
+                  <option key={ambiente.id_ambiente} value={ambiente.id_ambiente}>
+                    {ambiente.nombre_ambiente} - {ambiente.ubicacion}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
 
           <div className="flex justify-end space-x-3 pt-4">

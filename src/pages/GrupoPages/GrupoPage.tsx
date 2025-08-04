@@ -18,6 +18,14 @@ const GrupoPage = () => {
   // Usuario autenticado y roles permitidos
   const currentUser = useAuth();
 
+  // Estado para almacenar los detalles del grupo seleccionado
+  const [grupoSeleccionado, setGrupoSeleccionado] = useState<Grupo | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  
+  // Estado para el modal de tabla de grupos
+  const [isTableModalOpen, setIsTableModalOpen] = useState(false);
+
   // Si el hook todavía está cargando el usuario, mostrar verificación
   if (!currentUser) {
     return (
@@ -40,13 +48,6 @@ const GrupoPage = () => {
       />
     );
   }
-  // Estado para almacenar los detalles del grupo seleccionado
-  const [grupoSeleccionado, setGrupoSeleccionado] = useState<Grupo | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  
-  // Estado para el modal de tabla de grupos
-  const [isTableModalOpen, setIsTableModalOpen] = useState(false);
 
   // Función que maneja la selección de un grupo
   const handleGrupoSelect = async (grupo: Grupo) => {
