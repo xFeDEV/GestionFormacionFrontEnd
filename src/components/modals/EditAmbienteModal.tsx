@@ -196,23 +196,6 @@ const EditAmbienteModal: React.FC<EditAmbienteModalProps> = ({
             />
           </div>
 
-          {/* Código del Centro */}
-          <div>
-            <Label htmlFor="cod_centro">Código del Centro</Label>
-            <InputField
-              type="number"
-              id="cod_centro"
-              name="cod_centro"
-              placeholder="Ingrese el código del centro"
-              value={formData.cod_centro || ''}
-              onChange={handleInputChange}
-              disabled={loading}
-              error={!!errors.cod_centro}
-              hint={errors.cod_centro}
-              min="1"
-            />
-          </div>
-
           {/* Botones */}
           <div className="flex gap-3 pt-4">
             <Button
