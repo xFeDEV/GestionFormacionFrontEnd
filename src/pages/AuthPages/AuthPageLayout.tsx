@@ -45,16 +45,14 @@ export default function AuthLayout({
           <div className="relative flex items-center justify-center z-1 ">
             {/* <!-- ===== Common Grid Shape Start ===== --> */}
 
-            <div className="flex flex-col items-center max-w-xs  bg-white opacity-80 p-4 rounded-lg">
-              <Link to="/" className="block mb-4">
+            <div className="flex flex-col items-center max-w-md  bg-white opacity-80 p-4 rounded-lg">
+              <Link to="/" className="block">
                 <img
-                  width={231}
-                  height={48}
+                  width={1200}
                   src="/images/logo/auth-logo.svg"
                   alt="Logo"
                 />
               </Link>
-              <p className="text-center text-gray-400 ">Gestión Formación</p>
             </div>
           </div>
         </div>
