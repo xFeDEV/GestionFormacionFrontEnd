@@ -67,36 +67,42 @@ export interface DashboardFilters {
 // Coincide con DashboardKPISchema
 export interface DashboardKPI {
   total_grupo: number;
+  total_aprendices_formacion: number;
 }
 
 // Coincide con GruposPorMunicipioSchema
 export interface DistribucionMunicipio {
   municipio: string;
   cantidad: number;
+  total_aprendices_formacion: number;
 }
 
 // Coincide con GruposPorJornadaSchema
 export interface DistribucionJornada {
   jornada: string;
   cantidad: number;
+  total_aprendices_formacion: number;
 }
 
 // Coincide con GruposPorModalidadSchema
 export interface DistribucionModalidad {
   modalidad: string;
   cantidad: number;
+  total_aprendices_formacion: number;
 }
 
 // Coincide con GruposPorEtapaSchema
 export interface DistribucionEtapa {
   etapa: string;
   cantidad: number;
+  total_aprendices_formacion: number;
 }
 
 // Coincide con GruposPorNivelSchema
 export interface DistribucionNivel {
   nivel: string;
   cantidad: number;
+  total_aprendices_formacion: number;
 }
 
 /**
@@ -365,7 +371,7 @@ const asignarInstructorAFicha = async (
   }
 };
 
-// --- Servicios del Dashboard (NUEVO) ---
+// --- Servicios del Dashboard ---
 
 /**
  * Función auxiliar para construir los parámetros de consulta de la URL

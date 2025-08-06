@@ -28,6 +28,7 @@ import CargaMasivaPage from "./pages/CargaMasiva/CargaMasivaPage";
 import ProgramsPage from "./pages/Programs/ProgramsPage";
 import GrupoPage from "./pages/GrupoPages/GrupoPage";
 import GruposInstructorPage from "./pages/GruposInstructor/GruposInstructorPage";
+import Aprendices from "./pages/Dashboard/Aprendices";
 
 export default function App() {
   return (
@@ -50,6 +51,7 @@ export default function App() {
             }
           >
             <Route index path="/" element={<Home />} />
+            <Route path="/dashboard-aprendices" element={<Aprendices />} />
 
             {/* Others Page */}
             <Route path="/profile" element={<UserProfiles />} />
