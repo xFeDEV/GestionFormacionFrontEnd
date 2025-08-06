@@ -49,7 +49,7 @@ export default function AuthLayout({
               <Link to="/" className="block">
                 <img
                   width={1200}
-                  src="/images/logo/auth-logo.svg"
+                  src="/images/logo/sena.svg"
                   alt="Logo"
                 />
               </Link>
